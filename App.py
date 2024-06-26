@@ -61,7 +61,7 @@ budget_data['Año'] = budget_data['Año'].astype(str)
 # Filtro lateral para seleccionar Sociedad
 with st.sidebar:
     st.header("Parámetros")
-    opciones_año = sorted(data0['Período'].str[:4].unique())  # Asumimos que 'Período' tiene el formato 'YYYY-MM'
+    opciones_año = ['Todos'] + list(data0['Ejercicio'].unique())
     opcion_año = st.selectbox('Año', opciones_año)
 
     opciones_area = ['Todos'] + sorted(data0['Area'].unique())
