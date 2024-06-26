@@ -6,7 +6,7 @@ st.markdown("<h1 style='text-align: center; color: black; font-size: 24px;'>MONI
 
 # Definimos las URLs de los archivos de referencia
 DATA0_URL = 'https://streamlitmaps.s3.amazonaws.com/Data_0524.csv'
-BUDGET_URL = 'https://streamlitmaps.s3.amazonaws.com/Base_Budget.csv'
+BUDGET_URL = 'https://streamlitmaps.s3.amazonaws.com/Base_Presupuesto.csv'
 
 # Función para cargar el archivo de referencia
 @st.cache_data
