@@ -105,12 +105,14 @@ gasto_real = data0.groupby(['Ejercicio', 'Período'])['Valor/mon.inf.'].sum().re
 gasto_real['Valor/mon.inf.'] = (gasto_real['Valor/mon.inf.'] / 1000000).round(1)  # Convertir a millones con un decimal
 gasto_real = gasto_real.rename(columns={'Ejercicio': 'Año', 'Período': 'Mes'})
 
-# Asegurarnos de que todos los meses estén presentes en gasto_real
-all_months = pd.DataFrame({'Mes': [f'{i:02d}' for i in range(1, 13)]})
-gasto_real = gasto_real.merge(all_months, on='Mes', how='right').fillna(0)
+# Verificar el contenido después de agrupar y convertir
+st.write("Gasto real agrupado y convertido:", gasto_real.head())
 
 gasto_presupuestado = budget_data.groupby(['Año', 'Mes'])['Presupuesto'].sum().reset_index()
 gasto_presupuestado['Presupuesto'] = gasto_presupuestado['Presupuesto'].round(1)
+
+# Verificar el contenido después de agrupar
+st.write("Gasto presupuestado agrupado:", gasto_presupuestado.head())
 
 # Asegurarse de que las columnas son del mismo tipo
 gasto_real['Año'] = gasto_real['Año'].astype(str)
@@ -120,6 +122,10 @@ gasto_presupuestado['Mes'] = gasto_presupuestado['Mes'].astype(str)
 
 # Crear la tabla combinada
 combined_data = pd.merge(gasto_real, gasto_presupuestado, on=['Año', 'Mes'], how='outer').fillna(0)
+
+# Verificar el contenido después de combinar
+st.write("Datos combinados:", combined_data.head())
+
 combined_data['Diferencia'] = combined_data['Valor/mon.inf.'] - combined_data['Presupuesto']
 
 # Mostrar las tablas en la aplicación Streamlit
@@ -128,6 +134,3 @@ st.markdown("### ANÁLISIS DE GASTO Y PRESUPUESTO")
 # Tabla combinada
 st.markdown("#### Tabla de Gasto Real vs Presupuestado")
 st.dataframe(combined_data.set_index(['Año', 'Mes']).T)
-
-# Guardar la tabla consolidada para revisión
-combined_data.to_csv('/mnt/data/Tabla_consolidada_ajustada.csv', index=False)
