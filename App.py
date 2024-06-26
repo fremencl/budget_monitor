@@ -101,7 +101,7 @@ st.markdown("### ANÁLISIS DE GASTO Y PRESUPUESTO")
 
 # Tabla de Gasto Real
 st.markdown("#### Tabla de Gasto Real")
-st.dataframe(gasto_real.set_index('Mes').T)
+st.dataframe(gasto_real.set_index('Período').T)
 
 # Tabla de Gasto Presupuestado
 st.markdown("#### Tabla de Gasto Presupuestado")
