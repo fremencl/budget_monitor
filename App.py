@@ -55,13 +55,13 @@ data0 = eliminar_filas_grupo_ceco(data0)
 data0 = eliminar_pares_opuestos(data0)
 
 # Asegurarse de que 'Período' es de tipo string
-data0['Período'] = data0['Período'].astype(str)
+data0['Ejercicio'] = data0['Ejercicio'].astype(str)
 budget_data['Año'] = budget_data['Año'].astype(str)
 
 # Filtro lateral para seleccionar Sociedad
 with st.sidebar:
     st.header("Parámetros")
-    opciones_año = ['Todos'] + list(data0['Período'].unique())
+    opciones_año = ['Todos'] + list(data0['Ejercicio'].unique())
     opcion_año = st.selectbox('Año', opciones_año)
 
     opciones_area = ['Todos'] + sorted(data0['Area'].unique())
@@ -91,7 +91,7 @@ def aplicar_filtros(data, opcion_año, opcion_area, opcion_fam_cuenta, opcion_cl
     return data
 
 # Filtrar los datos
-data0 = aplicar_filtros(data0, opcion_año, opcion_area, opcion_fam_cuenta, opcion_clase_coste, opcion_grupo_ceco, 'Período')
+data0 = aplicar_filtros(data0, opcion_año, opcion_area, opcion_fam_cuenta, opcion_clase_coste, opcion_grupo_ceco, 'Ejercicio')
 budget_data = aplicar_filtros(budget_data, opcion_año, opcion_area, opcion_fam_cuenta, opcion_clase_coste, opcion_grupo_ceco, 'Año')
 
 # Verificar el contenido de los datos filtrados
@@ -102,12 +102,12 @@ st.write("Datos filtrados de presupuesto:", budget_data.head())
 gasto_real = data0.groupby('Período')['Valor/mon.inf.'].sum().reset_index()
 gasto_real['Valor/mon.inf.'] = (gasto_real['Valor/mon.inf.'] / 1000000).round(1)
 
-gasto_presupuestado = budget_data.groupby('Año')['Presupuesto'].sum().reset_index()
+gasto_presupuestado = budget_data.groupby('Mes')['Presupuesto'].sum().reset_index()
 gasto_presupuestado['Presupuesto'] = gasto_presupuestado['Presupuesto'].round(1)
 
 # Crear la tabla combinada
 combined_data = pd.DataFrame({
-    'Año': gasto_real['Período'],
+    'Año': gasto_real['Ejercicio'],
     'Gasto Real (millones)': gasto_real['Valor/mon.inf.'],
     'Gasto Presupuestado (millones)': gasto_presupuestado['Presupuesto']
 })
