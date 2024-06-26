@@ -1,9 +1,5 @@
-# Importación de librerías
 import streamlit as st
 import pandas as pd
-import plotly.express as px
-import numpy as np
-# from datetime import datetime, timedelta
 
 # Título de la aplicación
 st.markdown("<h1 style='text-align: center; color: black; font-size: 24px;'>MONITOR GESTIÓN PRESUPUESTARIA</h1>", unsafe_allow_html=True)
@@ -12,51 +8,40 @@ st.markdown("<h1 style='text-align: center; color: black; font-size: 24px;'>MONI
 DATA0_URL = 'https://streamlitmaps.s3.amazonaws.com/Data_0524.csv'
 
 # Función para cargar el archivo de referencia
+@st.cache_data
 def load_data0():
-    # Carga el archivo CSV, decodificando y usando ";" como separador
     data0 = pd.read_csv(DATA0_URL, encoding='ISO-8859-1', sep=';')
-    
-    # Conversión de 'Valor/mon.inf.' a numérico, tratando errores
     data0['Valor/mon.inf.'] = pd.to_numeric(data0['Valor/mon.inf.'].str.replace(',', ''), errors='coerce').fillna(0)
-    
     return data0
 
 # Función para eliminar filas con valores específicos en "Grupo_Ceco"
 def eliminar_filas_grupo_ceco(data):
     valores_excluir = ["Abastecimiento y contratos", "Finanzas", "Servicios generales"]
-    data = data[~data['Grupo_Ceco'].isin(valores_excluir)]
-    return data
+    return data[~data['Grupo_Ceco'].isin(valores_excluir)]
 
 # Función para identificar y eliminar pares de valores opuestos
 def eliminar_pares_opuestos(data):
-    # Crear un DataFrame vacío para almacenar las filas que no se anulan
     filtered_df = pd.DataFrame()
-
-    # Agrupar por "Clase de coste" y "Centro de coste"
     groups = data.groupby(['Clase de coste', 'Centro de coste'])
-
+    
     for name, group in groups:
-        seen_values = {}  # Diccionario para rastrear valores y sus índices
+        seen_values = {}
         rows_to_remove = set()
         
         for index, row in group.iterrows():
             value = row['Valor/mon.inf.']
             if -value in seen_values:
-                # Si el valor opuesto está en el diccionario, marcar ambos para eliminación
                 opposite_index = seen_values[-value]
                 rows_to_remove.add(index)
                 rows_to_remove.add(opposite_index)
-                # Remover el valor opuesto del diccionario para evitar procesarlo nuevamente
                 del seen_values[-value]
             else:
-                # Solo agregar al diccionario si no está ya marcado para eliminación
                 if index not in rows_to_remove:
                     seen_values[value] = index
         
-        # Filtrar las filas que no están en rows_to_remove
         group_filtered = group.drop(rows_to_remove)
         filtered_df = pd.concat([filtered_df, group_filtered])
-
+    
     return filtered_df
 
 # Cargamos el archivo de referencia
@@ -71,25 +56,20 @@ data0 = eliminar_pares_opuestos(data0)
 # Filtro lateral para seleccionar Sociedad
 with st.sidebar:
     st.header("Parámetros")
-    # Opciones para el filtro de Ejercicio incluyendo una opción para mostrar todas
     opciones_año = ['Todos'] + list(data0['Ejercicio'].unique())
     opcion_año = st.selectbox('Año', opciones_año)
 
-    # Agregamos el filtro de Area
     opciones_area = ['Todos'] + sorted(data0['Area'].unique())
-    opcion_area = st.sidebar.selectbox('Area', opciones_area)
+    opcion_area = st.selectbox('Area', opciones_area)
 
-    # Agregamos el filtro de Familia Cuenta
     opciones_fam_cuenta = ['Todos'] + sorted(data0['Familia_Cuenta'].unique())
-    opcion_fam_cuenta = st.sidebar.selectbox('Familia_Cuenta', opciones_fam_cuenta)
+    opcion_fam_cuenta = st.selectbox('Familia_Cuenta', opciones_fam_cuenta)
 
-    # Agregamos el filtro de Clase de Coste
     opciones_clase_coste = ['Todos'] + sorted(data0['Clase de coste'].unique())
-    opcion_clase_coste = st.sidebar.selectbox('Clase de coste', opciones_clase_coste)
+    opcion_clase_coste = st.selectbox('Clase de coste', opciones_clase_coste)
 
-    # Agregamos el filtro de Grupo Ceco
     opciones_grupo_ceco = ['Todos'] + sorted(data0['Grupo_Ceco'].unique())
-    opcion_grupo_ceco = st.sidebar.selectbox('Grupo_Ceco', opciones_grupo_ceco)
+    opcion_grupo_ceco = st.selectbox('Grupo_Ceco', opciones_grupo_ceco)
 
 # Aplicar los filtros seleccionados
 if opcion_año != 'Todos':
