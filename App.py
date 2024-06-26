@@ -96,23 +96,23 @@ def aplicar_filtros(data, opcion_año, opcion_area, opcion_fam_cuenta, opcion_cl
 data0 = aplicar_filtros(data0, opcion_año, opcion_area, opcion_fam_cuenta, opcion_clase_coste, opcion_grupo_ceco, 'Ejercicio')
 budget_data = aplicar_filtros(budget_data, opcion_año, opcion_area, opcion_fam_cuenta, opcion_clase_coste, opcion_grupo_ceco, 'Año')
 
-# Verificar el contenido de los datos filtrados
-st.write("Datos filtrados de gasto real:", data0.head())
-st.write("Datos filtrados de presupuesto:", budget_data.head())
+# Comentar las tablas de datos filtrados
+# st.write("Datos filtrados de gasto real:", data0.head())
+# st.write("Datos filtrados de presupuesto:", budget_data.head())
 
 # Calcular las sumas por año y mes para Gasto Real y Gasto Presupuestado
 gasto_real = data0.groupby(['Ejercicio', 'Período'])['Valor/mon.inf.'].sum().reset_index()
 gasto_real['Valor/mon.inf.'] = (gasto_real['Valor/mon.inf.'] / 1000000).round(1)  # Convertir a millones con un decimal
 gasto_real = gasto_real.rename(columns={'Ejercicio': 'Año', 'Período': 'Mes'})
 
-# Verificar el contenido después de agrupar y convertir
-st.write("Gasto real agrupado y convertido:", gasto_real.head())
+# Comentar tabla de gastos agrupados
+# st.write("Gasto real agrupado y convertido:", gasto_real.head())
 
 gasto_presupuestado = budget_data.groupby(['Año', 'Mes'])['Presupuesto'].sum().reset_index()
 gasto_presupuestado['Presupuesto'] = gasto_presupuestado['Presupuesto'].round(1)
 
-# Verificar el contenido después de agrupar
-st.write("Gasto presupuestado agrupado:", gasto_presupuestado.head())
+# Comentar tabla de gastos presupuestados agrupados
+# st.write("Gasto presupuestado agrupado:", gasto_presupuestado.head())
 
 # Asegurarse de que las columnas son del mismo tipo
 gasto_real['Año'] = gasto_real['Año'].astype(str)
@@ -123,14 +123,21 @@ gasto_presupuestado['Mes'] = gasto_presupuestado['Mes'].astype(str)
 # Crear la tabla combinada
 combined_data = pd.merge(gasto_real, gasto_presupuestado, on=['Año', 'Mes'], how='outer').fillna(0)
 
-# Verificar el contenido después de combinar
-st.write("Datos combinados:", combined_data.head())
+# Comentar la tabla de datos combinados
+# st.write("Datos combinados:", combined_data.head())
 
 combined_data['Diferencia'] = combined_data['Valor/mon.inf.'] - combined_data['Presupuesto']
+
+# Ordenar las columnas de manera ascendente
+combined_data = combined_data.sort_values(by=['Año', 'Mes'])
 
 # Mostrar las tablas en la aplicación Streamlit
 st.markdown("### ANÁLISIS DE GASTO Y PRESUPUESTO")
 
 # Tabla combinada
 st.markdown("#### Tabla de Gasto Real vs Presupuestado")
-st.dataframe(combined_data.set_index(['Año', 'Mes']).T)
+
+# Ocultar la primera fila de año y ordenar las columnas
+combined_data_display = combined_data.drop(columns=['Año']).set_index(['Mes'])
+combined_data_display.columns.name = None  # Eliminar el nombre de las columnas
+st.dataframe(combined_data_display.T)
