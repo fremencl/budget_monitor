@@ -90,7 +90,7 @@ data0 = aplicar_filtros(data0, opcion_año, opcion_area, opcion_fam_cuenta, opci
 budget_data = aplicar_filtros(budget_data, opcion_año, opcion_area, opcion_fam_cuenta, opcion_clase_coste, opcion_grupo_ceco)
 
 # Calcular las sumas por mes para Gasto Real y Gasto Presupuestado
-gasto_real = data0.groupby('Mes')['Valor/mon.inf.'].sum().reset_index()
+gasto_real = data0.groupby('Período')['Valor/mon.inf.'].sum().reset_index()
 gasto_real['Valor/mon.inf.'] = (gasto_real['Valor/mon.inf.'] / 1000000).round(1)
 
 gasto_presupuestado = budget_data.groupby('Mes')['Presupuesto'].sum().reset_index()
