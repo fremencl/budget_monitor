@@ -54,6 +54,9 @@ budget_data = load_data(BUDGET_URL)
 data0 = eliminar_filas_grupo_ceco(data0)
 data0 = eliminar_pares_opuestos(data0)
 
+# Asegurarse de que 'Período' es de tipo string
+data0['Período'] = data0['Período'].astype(str)
+
 # Filtro lateral para seleccionar Sociedad
 with st.sidebar:
     st.header("Parámetros")
