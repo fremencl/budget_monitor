@@ -61,7 +61,7 @@ budget_data['Año'] = budget_data['Año'].astype(str)
 # Filtro lateral para seleccionar Sociedad
 with st.sidebar:
     st.header("Parámetros")
-    opciones_año = ['Todos'] + list(data0['Ejercicio'].unique())
+    opciones_año = ['Todos'] + list(data0['Período'].unique())
     opcion_año = st.selectbox('Año', opciones_año)
 
     opciones_area = ['Todos'] + sorted(data0['Area'].unique())
@@ -79,7 +79,7 @@ with st.sidebar:
 # Aplicar los filtros seleccionados a ambos DataFrames
 def aplicar_filtros(data, opcion_año, opcion_area, opcion_fam_cuenta, opcion_clase_coste, opcion_grupo_ceco, col_año):
     if opcion_año != 'Todos':
-        data = data[data[col_año].str[:4] == opcion_año]
+        data = data[data[col_año] == opcion_año]
     if opcion_area != 'Todos':
         data = data[data['Area'] == opcion_area]
     if opcion_fam_cuenta != 'Todos':
@@ -90,24 +90,24 @@ def aplicar_filtros(data, opcion_año, opcion_area, opcion_fam_cuenta, opcion_cl
         data = data[data['Grupo_Ceco'] == opcion_grupo_ceco]
     return data
 
+# Filtrar los datos
 data0 = aplicar_filtros(data0, opcion_año, opcion_area, opcion_fam_cuenta, opcion_clase_coste, opcion_grupo_ceco, 'Período')
 budget_data = aplicar_filtros(budget_data, opcion_año, opcion_area, opcion_fam_cuenta, opcion_clase_coste, opcion_grupo_ceco, 'Año')
 
-# Calcular las sumas por mes para Gasto Real y Gasto Presupuestado
-gasto_real = data0.groupby(data0['Período'].str[-2:])['Valor/mon.inf.'].sum().reset_index()
+# Verificar el contenido de los datos filtrados
+st.write("Datos filtrados de gasto real:", data0.head())
+st.write("Datos filtrados de presupuesto:", budget_data.head())
+
+# Calcular las sumas por año para Gasto Real y Gasto Presupuestado
+gasto_real = data0.groupby('Período')['Valor/mon.inf.'].sum().reset_index()
 gasto_real['Valor/mon.inf.'] = (gasto_real['Valor/mon.inf.'] / 1000000).round(1)
-gasto_real = gasto_real.rename(columns={'Período': 'Mes'})
 
-# Asegurarnos de que todos los meses estén presentes en gasto_real
-all_months = pd.DataFrame({'Mes': [f'{i:02d}' for i in range(1, 13)]})
-gasto_real = all_months.merge(gasto_real, on='Mes', how='left').fillna(0)
-
-gasto_presupuestado = budget_data.groupby('Mes')['Presupuesto'].sum().reset_index()
+gasto_presupuestado = budget_data.groupby('Año')['Presupuesto'].sum().reset_index()
 gasto_presupuestado['Presupuesto'] = gasto_presupuestado['Presupuesto'].round(1)
 
 # Crear la tabla combinada
 combined_data = pd.DataFrame({
-    'Mes': gasto_real['Mes'],
+    'Año': gasto_real['Período'],
     'Gasto Real (millones)': gasto_real['Valor/mon.inf.'],
     'Gasto Presupuestado (millones)': gasto_presupuestado['Presupuesto']
 })
@@ -118,4 +118,4 @@ st.markdown("### ANÁLISIS DE GASTO Y PRESUPUESTO")
 
 # Tabla combinada
 st.markdown("#### Tabla de Gasto Real vs Presupuestado")
-st.dataframe(combined_data.set_index('Mes').T)
+st.dataframe(combined_data.set_index('Año').T)
