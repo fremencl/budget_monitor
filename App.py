@@ -116,9 +116,9 @@ gasto_presupuestado['Presupuesto'] = gasto_presupuestado['Presupuesto'].round(1)
 
 # Asegurarse de que las columnas son del mismo tipo
 gasto_real['Año'] = gasto_real['Año'].astype(str)
-gasto_real['Mes'] = gasto_real['Mes'].astype(str)
+gasto_real['Mes'] = gasto_real['Mes'].astype(int)  # Convertir a entero para orden correcto
 gasto_presupuestado['Año'] = gasto_presupuestado['Año'].astype(str)
-gasto_presupuestado['Mes'] = gasto_presupuestado['Mes'].astype(str)
+gasto_presupuestado['Mes'] = gasto_presupuestado['Mes'].astype(int)  # Convertir a entero para orden correcto
 
 # Crear la tabla combinada
 combined_data = pd.merge(gasto_real, gasto_presupuestado, on=['Año', 'Mes'], how='outer').fillna(0)
@@ -140,4 +140,5 @@ st.markdown("#### Tabla de Gasto Real vs Presupuestado")
 # Ocultar la primera fila de año y ordenar las columnas
 combined_data_display = combined_data.drop(columns=['Año']).set_index(['Mes'])
 combined_data_display.columns.name = None  # Eliminar el nombre de las columnas
+combined_data_display.index = combined_data_display.index.map(str)  # Convertir índice a string para visualización
 st.dataframe(combined_data_display.T)
