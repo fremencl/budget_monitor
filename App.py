@@ -56,6 +56,7 @@ data0 = eliminar_pares_opuestos(data0)
 
 # Asegurarse de que 'Período' es de tipo string
 data0['Período'] = data0['Período'].astype(str)
+budget_data['Año'] = budget_data['Año'].astype(str)
 
 # Filtro lateral para seleccionar Sociedad
 with st.sidebar:
