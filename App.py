@@ -75,7 +75,7 @@ with st.sidebar:
 # Aplicar los filtros seleccionados a ambos DataFrames
 def aplicar_filtros(data, opcion_año, opcion_area, opcion_fam_cuenta, opcion_clase_coste, opcion_grupo_ceco):
     if opcion_año != 'Todos':
-        data = data[data['Ejercicio'] == opcion_año]
+        data = data[data['Año'] == opcion_año]
     if opcion_area != 'Todos':
         data = data[data['Area'] == opcion_area]
     if opcion_fam_cuenta != 'Todos':
