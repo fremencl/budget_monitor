@@ -72,10 +72,9 @@ with st.sidebar:
     opciones_grupo_ceco = ['Todos'] + sorted(data0['Grupo_Ceco'].unique())
     opcion_grupo_ceco = st.selectbox('Grupo_Ceco', opciones_grupo_ceco)
 
-# Aplicar los filtros seleccionados a ambos DataFrames
-def aplicar_filtros(data, opcion_año, opcion_area, opcion_fam_cuenta, opcion_clase_coste, opcion_grupo_ceco):
+def aplicar_filtros(data, opcion_año, opcion_area, opcion_fam_cuenta, opcion_clase_coste, opcion_grupo_ceco, col_año):
     if opcion_año != 'Todos':
-        data = data[data['Año'] == opcion_año]
+        data = data[data[col_año] == opcion_año]
     if opcion_area != 'Todos':
         data = data[data['Area'] == opcion_area]
     if opcion_fam_cuenta != 'Todos':
@@ -86,8 +85,9 @@ def aplicar_filtros(data, opcion_año, opcion_area, opcion_fam_cuenta, opcion_cl
         data = data[data['Grupo_Ceco'] == opcion_grupo_ceco]
     return data
 
-data0 = aplicar_filtros(data0, opcion_año, opcion_area, opcion_fam_cuenta, opcion_clase_coste, opcion_grupo_ceco)
-budget_data = aplicar_filtros(budget_data, opcion_año, opcion_area, opcion_fam_cuenta, opcion_clase_coste, opcion_grupo_ceco)
+# Llamar a aplicar_filtros con el nombre correcto de la columna de año
+data0 = aplicar_filtros(data0, opcion_año, opcion_area, opcion_fam_cuenta, opcion_clase_coste, opcion_grupo_ceco, 'Período')
+budget_data = aplicar_filtros(budget_data, opcion_año, opcion_area, opcion_fam_cuenta, opcion_clase_coste, opcion_grupo_ceco, 'Año')
 
 # Calcular las sumas por mes para Gasto Real y Gasto Presupuestado
 gasto_real = data0.groupby('Período')['Valor/mon.inf.'].sum().reset_index()
