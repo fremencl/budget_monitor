@@ -112,6 +112,12 @@ gasto_real = gasto_real.merge(all_months, on='Mes', how='right').fillna(0)
 gasto_presupuestado = budget_data.groupby(['Año', 'Mes'])['Presupuesto'].sum().reset_index()
 gasto_presupuestado['Presupuesto'] = gasto_presupuestado['Presupuesto'].round(1)
 
+# Asegurarse de que las columnas son del mismo tipo
+gasto_real['Año'] = gasto_real['Año'].astype(str)
+gasto_real['Mes'] = gasto_real['Mes'].astype(str)
+gasto_presupuestado['Año'] = gasto_presupuestado['Año'].astype(str)
+gasto_presupuestado['Mes'] = gasto_presupuestado['Mes'].astype(str)
+
 # Crear la tabla combinada
 combined_data = pd.merge(gasto_real, gasto_presupuestado, on=['Año', 'Mes'], how='outer').fillna(0)
 combined_data['Diferencia'] = combined_data['Valor/mon.inf.'] - combined_data['Presupuesto']
