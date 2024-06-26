@@ -100,9 +100,9 @@ budget_data = aplicar_filtros(budget_data, opcion_año, opcion_area, opcion_fam_
 st.write("Datos filtrados de gasto real:", data0.head())
 st.write("Datos filtrados de presupuesto:", budget_data.head())
 
-# Calcular las sumas por mes para Gasto Real y Gasto Presupuestado
+# Calcular las sumas por año y mes para Gasto Real y Gasto Presupuestado
 gasto_real = data0.groupby(['Ejercicio', 'Período'])['Valor/mon.inf.'].sum().reset_index()
-gasto_real['Valor/mon.inf.'] = (gasto_real['Valor/mon.inf.'] / 1000000).round(1)
+gasto_real['Valor/mon.inf.'] = (gasto_real['Valor/mon.inf.'] / 1000000).round(1)  # Convertir a millones con un decimal
 gasto_real = gasto_real.rename(columns={'Ejercicio': 'Año', 'Período': 'Mes'})
 
 # Asegurarnos de que todos los meses estén presentes en gasto_real
@@ -128,3 +128,6 @@ st.markdown("### ANÁLISIS DE GASTO Y PRESUPUESTO")
 # Tabla combinada
 st.markdown("#### Tabla de Gasto Real vs Presupuestado")
 st.dataframe(combined_data.set_index(['Año', 'Mes']).T)
+
+# Guardar la tabla consolidada para revisión
+combined_data.to_csv('/mnt/data/Tabla_consolidada_ajustada.csv', index=False)
