@@ -7,6 +7,7 @@ st.markdown("<h1 style='text-align: center; color: black; font-size: 24px;'>MONI
 # Definimos las URLs de los archivos de referencia
 DATA0_URL = 'https://streamlitmaps.s3.amazonaws.com/Data_0524.csv'
 BUDGET_URL = 'https://streamlitmaps.s3.amazonaws.com/Base_Presupuesto.csv'
+ORDERS_URL = 'https://streamlitmaps.s3.amazonaws.com/Base_ordenes.csv'
 
 # Función para cargar el archivo de referencia
 @st.cache_data
@@ -49,6 +50,7 @@ def eliminar_pares_opuestos(data):
 # Cargar los datos
 data0 = load_data(DATA0_URL)
 budget_data = load_data(BUDGET_URL)
+orders_data = load_data(ORDERS_URL)
 
 # Procesamiento de data0
 data0 = eliminar_filas_grupo_ceco(data0)
@@ -190,7 +192,7 @@ data0_sorted = data0.sort_values(by='Valor/mon.inf.', ascending=False)
 top_10_gastos = data0_sorted.head(10)
 
 # Seleccionar columnas específicas para mostrar
-top_10_gastos_display = top_10_gastos[['Centro de coste', 'Denominación del objeto', 'Grupo_Ceco', 'Fe.contabilización', 'Valor/mon.inf.']]
+top_10_gastos_display = top_10_gastos[['Centro de coste', 'Denominación de objeto', 'Grupo_Ceco', 'Fe.contabilización', 'Valor/mon.inf.']]
 
 # Mostrar la tabla en la aplicación Streamlit
 st.dataframe(top_10_gastos_display)
@@ -207,5 +209,29 @@ gasto_sin_ot = data0[data0['Orden partner'].isna()]['Valor/mon.inf.'].sum()
 # Mostrar los widgets alineados horizontalmente
 col1, col2 = st.columns(2)
 
-col1.metric(label="Gasto con OT", value=f"${gasto_con_ot:.1f}M")
-col2.metric(label="Gasto sin OT", value=f"${gasto_sin_ot:.1f}M")
+col1.markdown(f"<div style='border: 2px solid black; padding: 10px; border-radius: 5px; text-align: center;'>Gasto con OT<br><strong>${gasto_con_ot:,.0f}M</strong></div>", unsafe_allow_html=True)
+col2.markdown(f"<div style='border: 2px solid black; padding: 10px; border-radius: 5px; text-align: center;'>Gasto sin OT<br><strong>${gasto_sin_ot:,.0f}M</strong></div>", unsafe_allow_html=True)
+
+# Nueva sección: Tabla de Tipos de Orden
+st.markdown("### Tipos de Orden")
+
+# Unir data0 con orders_data para obtener el tipo de orden
+data0 = data0.merge(orders_data, how='left', left_on='Orden partner', right_on='Orden')
+
+# Calcular las métricas para cada tipo de orden
+tipo_orden_metrics = data0.groupby('Clase de orden').agg(
+    cantidad_ordenes=pd.NamedAgg(column='Orden partner', aggfunc='count'),
+    gasto=pd.NamedAgg(column='Valor/mon.inf.', aggfunc='sum')
+).reset_index()
+
+# Calcular el valor OT medio
+tipo_orden_metrics['valor_ot_media'] = tipo_orden_metrics['gasto'] / tipo_orden_metrics['cantidad_ordenes']
+
+# Seleccionar columnas específicas para mostrar
+tipo_orden_metrics_display = tipo_orden_metrics[['Clase de orden', 'cantidad_ordenes', 'gasto', 'valor_ot_media']]
+
+# Renombrar las columnas para la visualización
+tipo_orden_metrics_display.columns = ['Tipo de orden', 'Cantidad de ordenes', 'Gasto', 'Valor OT media']
+
+# Mostrar la tabla en la aplicación Streamlit
+st.dataframe(tipo_orden_metrics_display)
