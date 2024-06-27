@@ -226,6 +226,7 @@ tipo_orden_metrics = data0.groupby('Clase de orden').agg(
 
 # Calcular el valor OT medio
 tipo_orden_metrics['valor_ot_media'] = tipo_orden_metrics['gasto'] / tipo_orden_metrics['cantidad_ordenes']
+tipo_orden_metrics_display['valor_ot_media'] = tipo_orden_metrics_display['valor_ot_media'].round(0).astype(int)
 
 # Seleccionar columnas específicas para mostrar
 tipo_orden_metrics_display = tipo_orden_metrics[['Clase de orden', 'cantidad_ordenes', 'gasto', 'valor_ot_media']]
