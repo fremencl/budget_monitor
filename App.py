@@ -268,8 +268,8 @@ for column in data0_pivot.columns:
     if column != 'Presupuesto':
         fig_columnas.add_trace(go.Bar(x=data0_pivot.index, y=data0_pivot[column], name=column))
 
-# Añadir la columna de presupuesto
-fig_columnas.add_trace(go.Bar(x=data0_pivot.index, y=data0_pivot['Presupuesto'], name='Presupuesto', marker_color='grey'))
+# Añadir la línea de presupuesto
+fig_columnas.add_trace(go.Scatter(x=data0_pivot.index, y=data0_pivot['Presupuesto'], mode='lines+markers', name='Presupuesto', line=dict(color='grey', width=2, dash='dash')))
 
 fig_columnas.update_layout(barmode='stack', title='Gasto Real por Tipo de Orden vs Presupuesto', xaxis_title='Mes', yaxis_title='Gasto (Millones)', legend_title='Tipo de Orden')
 st.plotly_chart(fig_columnas)
