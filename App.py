@@ -142,3 +142,32 @@ combined_data_display = combined_data.drop(columns=['Año']).set_index(['Mes'])
 combined_data_display.columns.name = None  # Eliminar el nombre de las columnas
 combined_data_display.index = combined_data_display.index.map(str)  # Convertir índice a string para visualización
 st.dataframe(combined_data_display.T)
+
+# Nueva sección: Widgets de Gasto Acumulado
+st.markdown("### Gasto Acumulado")
+
+# Calcular el gasto acumulado real
+ultimo_mes_real = gasto_real['Mes'].max()
+gasto_acumulado_real = gasto_real[gasto_real['Mes'] <= ultimo_mes_real]['Valor/mon.inf.'].sum()
+
+# Calcular el gasto acumulado presupuestado
+gasto_acumulado_presupuestado = gasto_presupuestado[gasto_presupuestado['Mes'] <= ultimo_mes_real]['Presupuesto'].sum()
+
+# Aplicar lógica de colores
+diferencia_porcentaje = (gasto_acumulado_real / gasto_acumulado_presupuestado) * 100
+
+if diferencia_porcentaje <= 100:
+    color_real = 'green'
+    color_presupuesto = 'green'
+elif 100 < diferencia_porcentaje <= 110:
+    color_real = 'yellow'
+    color_presupuesto = 'yellow'
+else:
+    color_real = 'red'
+    color_presupuesto = 'red'
+
+# Mostrar los widgets alineados horizontalmente
+col1, col2 = st.columns(2)
+
+col1.metric(label="Gasto acumulado real", value=f"${gasto_acumulado_real:.1f}M", delta=None, delta_color=color_real)
+col2.metric(label="Gasto acumulado presupuestado", value=f"${gasto_acumulado_presupuestado:.1f}M", delta=None, delta_color=color_presupuesto)
