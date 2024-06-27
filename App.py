@@ -157,17 +157,17 @@ gasto_acumulado_presupuestado = gasto_presupuestado[gasto_presupuestado['Mes'] <
 diferencia_porcentaje = (gasto_acumulado_real / gasto_acumulado_presupuestado) * 100
 
 if diferencia_porcentaje <= 100:
-    color_real = 'green'
-    color_presupuesto = 'green'
+    color_real = 'background-color: green;'
+    color_presupuesto = 'background-color: green;'
 elif 100 < diferencia_porcentaje <= 110:
-    color_real = 'yellow'
-    color_presupuesto = 'yellow'
+    color_real = 'background-color: yellow;'
+    color_presupuesto = 'background-color: yellow;'
 else:
-    color_real = 'red'
-    color_presupuesto = 'red'
+    color_real = 'background-color: red;'
+    color_presupuesto = 'background-color: red;'
 
 # Mostrar los widgets alineados horizontalmente
 col1, col2 = st.columns(2)
 
-col1.metric(label="Gasto acumulado real", value=f"${gasto_acumulado_real:.1f}M", delta=None, delta_color=color_real)
-col2.metric(label="Gasto acumulado presupuestado", value=f"${gasto_acumulado_presupuestado:.1f}M", delta=None, delta_color=color_presupuesto)
+col1.markdown(f"<div style='{color_real} padding: 10px; border-radius: 5px; text-align: center;'>Gasto acumulado real<br><strong>${gasto_acumulado_real:.1f}M</strong></div>", unsafe_allow_html=True)
+col2.markdown(f"<div style='{color_presupuesto} padding: 10px; border-radius: 5px; text-align: center;'>Gasto acumulado presupuestado<br><strong>${gasto_acumulado_presupuestado:.1f}M</strong></div>", unsafe_allow_html=True)
