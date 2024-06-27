@@ -190,7 +190,22 @@ data0_sorted = data0.sort_values(by='Valor/mon.inf.', ascending=False)
 top_10_gastos = data0_sorted.head(10)
 
 # Seleccionar columnas específicas para mostrar
-top_10_gastos_display = top_10_gastos[['Centro de coste', 'Denominación del objeto', 'Grupo_Ceco', 'Fe.contabilización', 'Valor/mon.inf.']]
+top_10_gastos_display = top_10_gastos[['Centro de coste', 'Denominación de objeto', 'Grupo_Ceco', 'Fe.contabilización', 'Valor/mon.inf.']]
 
 # Mostrar la tabla en la aplicación Streamlit
 st.dataframe(top_10_gastos_display)
+
+# Nueva sección: Widgets de Gasto con y sin OT
+st.markdown("### Gasto con y sin OT")
+
+# Calcular gasto con OT
+gasto_con_ot = data0[data0['Orden partner'].notna()]['Valor/mon.inf.'].sum()
+
+# Calcular gasto sin OT
+gasto_sin_ot = data0[data0['Orden partner'].isna()]['Valor/mon.inf.'].sum()
+
+# Mostrar los widgets alineados horizontalmente
+col1, col2 = st.columns(2)
+
+col1.metric(label="Gasto con OT", value=f"${gasto_con_ot:.1f}M")
+col2.metric(label="Gasto sin OT", value=f"${gasto_sin_ot:.1f}M")
