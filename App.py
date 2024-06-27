@@ -1,5 +1,7 @@
 import streamlit as st
 import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
 
 # Título de la aplicación
 st.markdown("<h1 style='text-align: center; color: black; font-size: 24px;'>MONITOR GESTIÓN PRESUPUESTARIA</h1>", unsafe_allow_html=True)
@@ -229,10 +231,45 @@ tipo_orden_metrics['valor_ot_media'] = tipo_orden_metrics['gasto'] / tipo_orden_
 
 # Seleccionar columnas específicas para mostrar
 tipo_orden_metrics_display = tipo_orden_metrics[['Clase de orden', 'cantidad_ordenes', 'gasto', 'valor_ot_media']]
-tipo_orden_metrics_display['valor_ot_media'] = tipo_orden_metrics_display['valor_ot_media'].round(0).astype(int)
 
 # Renombrar las columnas para la visualización
 tipo_orden_metrics_display.columns = ['Tipo de orden', 'Cantidad de ordenes', 'Gasto', 'Valor OT media']
 
+# Redondear valor_ot_media a 0 decimales
+tipo_orden_metrics_display['Valor OT media'] = tipo_orden_metrics_display['Valor OT media'].round(0).astype(int)
+
 # Mostrar la tabla en la aplicación Streamlit
 st.dataframe(tipo_orden_metrics_display)
+
+# Gráfico de Líneas para Gasto Acumulado
+st.markdown("### Gráfico de Gasto Acumulado")
+
+fig_acumulado = go.Figure()
+fig_acumulado.add_trace(go.Scatter(x=combined_data['Mes'], y=combined_data['Valor/mon.inf.'].cumsum(), mode='lines+markers', name='Gasto Acumulado Real'))
+fig_acumulado.add_trace(go.Scatter(x=combined_data['Mes'], y=combined_data['Presupuesto'].cumsum(), mode='lines+markers', name='Gasto Acumulado Presupuestado'))
+fig_acumulado.update_layout(title='Evolución del Gasto Acumulado Real vs Presupuestado', xaxis_title='Mes', yaxis_title='Gasto Acumulado (Millones)')
+st.plotly_chart(fig_acumulado)
+
+# Gráfico de Columnas Apiladas con Presupuesto
+st.markdown("### Gráfico de Gasto Real por Tipo de Orden y Presupuesto")
+
+# Preparar los datos para el gráfico de columnas apiladas
+data0['Mes'] = data0['Período'].astype(int)
+data0_grouped = data0.groupby(['Mes', 'Clase de orden'])['Valor/mon.inf.'].sum().reset_index()
+data0_pivot = data0_grouped.pivot(index='Mes', columns='Clase de orden', values='Valor/mon.inf.').fillna(0)
+
+# Agregar la columna de presupuesto
+data0_pivot['Presupuesto'] = combined_data.set_index('Mes')['Presupuesto']
+
+fig_columnas = go.Figure()
+
+# Añadir las columnas apiladas por tipo de orden
+for column in data0_pivot.columns:
+    if column != 'Presupuesto':
+        fig_columnas.add_trace(go.Bar(x=data0_pivot.index, y=data0_pivot[column], name=column))
+
+# Añadir la columna de presupuesto
+fig_columnas.add_trace(go.Bar(x=data0_pivot.index, y=data0_pivot['Presupuesto'], name='Presupuesto', marker_color='grey'))
+
+fig_columnas.update_layout(barmode='stack', title='Gasto Real por Tipo de Orden vs Presupuesto', xaxis_title='Mes', yaxis_title='Gasto (Millones)', legend_title='Tipo de Orden')
+st.plotly_chart(fig_columnas)
