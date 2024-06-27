@@ -181,3 +181,16 @@ if gasto_acumulado_presupuestado is not None:
     col2.markdown(f"<div style='{color_presupuesto} padding: 10px; border-radius: 5px; text-align: center;'>Gasto acumulado presupuestado<br><strong>${gasto_acumulado_presupuestado:.1f}M</strong></div>", unsafe_allow_html=True)
 else:
     col2.markdown(f"<div style='{color_presupuesto} padding: 10px; border-radius: 5px; text-align: center;'>Gasto acumulado presupuestado<br><strong>No disponible</strong></div>", unsafe_allow_html=True)
+
+# Nueva sección: Tabla de los 10 mayores gastos
+st.markdown("### Mayores Gastos")
+
+# Filtrar y ordenar data0 para obtener los 10 mayores gastos
+data0_sorted = data0.sort_values(by='Valor/mon.inf.', ascending=False)
+top_10_gastos = data0_sorted.head(10)
+
+# Seleccionar columnas específicas para mostrar
+top_10_gastos_display = top_10_gastos[['Centro de coste', 'Denominación de objeto', 'Grupo_Ceco', 'Fe.contabilización', 'Valor/mon.inf.']]
+
+# Mostrar la tabla en la aplicación Streamlit
+st.dataframe(top_10_gastos_display)
