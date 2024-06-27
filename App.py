@@ -192,7 +192,7 @@ data0_sorted = data0.sort_values(by='Valor/mon.inf.', ascending=False)
 top_10_gastos = data0_sorted.head(10)
 
 # Seleccionar columnas específicas para mostrar
-top_10_gastos_display = top_10_gastos[['Centro de coste', 'Denominación de objeto', 'Grupo_Ceco', 'Fe.contabilización', 'Valor/mon.inf.']]
+top_10_gastos_display = top_10_gastos[['Centro de coste', 'Denominación del objeto', 'Grupo_Ceco', 'Fe.contabilización', 'Valor/mon.inf.']]
 
 # Mostrar la tabla en la aplicación Streamlit
 st.dataframe(top_10_gastos_display)
