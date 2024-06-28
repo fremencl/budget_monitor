@@ -64,9 +64,12 @@ def eliminar_pares_opuestos(data):
             else:
                 seen_values[(period, value)] = index
         
+        # Convertir el set a una lista para indexar
+        rows_to_remove_list = list(rows_to_remove)
+        
         # Eliminar las filas identificadas y almacenar en removed_df
-        group_filtered = group.drop(rows_to_remove)
-        removed_rows = group.loc[rows_to_remove]
+        group_filtered = group.drop(rows_to_remove_list)
+        removed_rows = group.loc[rows_to_remove_list]
         removed_df = pd.concat([removed_df, removed_rows])
         filtered_df = pd.concat([filtered_df, group_filtered])
     
