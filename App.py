@@ -192,7 +192,7 @@ combined_data_display.index = combined_data_display.index.map(str)  # Convertir 
 st.dataframe(combined_data_display.T)
 
 # Nueva sección: Widgets de Gasto Acumulado
-st.markdown("### Gasto Acumulado")
+st.markdown("#### Gasto Acumulado")
 
 # Calcular el gasto acumulado real
 ultimo_mes_real = gasto_real['Mes'].max()
@@ -231,7 +231,7 @@ else:
     col2.markdown(f"<div style='{color_presupuesto} padding: 10px; border-radius: 5px; text-align: center;'>Gasto acumulado presupuestado<br><strong>No disponible</strong></div>", unsafe_allow_html=True)
 
 # Nueva sección: Tabla de los 10 mayores gastos
-st.markdown("### Mayores Gastos")
+st.markdown("#### Mayores Gastos")
 
 # Filtrar y ordenar data0 para obtener los 10 mayores gastos
 data0_sorted = data0.sort_values(by='Valor/mon.inf.', ascending=False)
@@ -244,7 +244,7 @@ top_10_gastos_display = top_10_gastos[['Centro de coste', 'Denominación del obj
 st.dataframe(top_10_gastos_display)
 
 # Nueva sección: Widgets de Gasto con y sin OT
-st.markdown("### Gasto con y sin OT")
+st.markdown("#### Gasto con y sin OT")
 
 # Calcular gasto con OT
 gasto_con_ot = data0[data0['Orden partner'].notna()]['Valor/mon.inf.'].sum()
