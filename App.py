@@ -33,17 +33,36 @@ def eliminar_pares_opuestos(data):
         seen_values = {}
         rows_to_remove = set()
         
+        # Ordenar el grupo por 'Período' de forma ascendente para procesar en orden temporal
+        group = group.sort_values(by='Período')
+        
         for index, row in group.iterrows():
             value = row['Valor/mon.inf.']
-            if -value in seen_values:
-                opposite_index = seen_values[-value]
-                rows_to_remove.add(index)
-                rows_to_remove.add(opposite_index)
-                del seen_values[-value]
-            else:
-                if index not in rows_to_remove:
-                    seen_values[value] = index
+            period = row['Período']
             
+            if value < 0:
+                # Buscar coincidencia en el mismo período
+                if (period, -value) in seen_values:
+                    opposite_index = seen_values[(period, -value)]
+                    rows_to_remove.add(index)
+                    rows_to_remove.add(opposite_index)
+                    del seen_values[(period, -value)]
+                else:
+                    # Buscar coincidencia en períodos anteriores
+                    for past_period in range(period - 1, 0, -1):
+                        if (past_period, -value) in seen_values:
+                            opposite_index = seen_values[(past_period, -value)]
+                            rows_to_remove.add(index)
+                            rows_to_remove.add(opposite_index)
+                            del seen_values[(past_period, -value)]
+                            break
+                    else:
+                        # No se encontró coincidencia, mantener el valor negativo
+                        seen_values[(period, value)] = index
+            else:
+                seen_values[(period, value)] = index
+        
+        # Eliminar las filas identificadas
         group_filtered = group.drop(rows_to_remove)
         filtered_df = pd.concat([filtered_df, group_filtered])
     
