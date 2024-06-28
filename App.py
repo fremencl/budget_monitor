@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import io
 import plotly.express as px
 import plotly.graph_objects as go
 
@@ -27,6 +28,7 @@ def eliminar_filas_grupo_ceco(data):
 # Función para identificar y eliminar pares de valores opuestos
 def eliminar_pares_opuestos(data):
     filtered_df = pd.DataFrame()
+    removed_df = pd.DataFrame()
     groups = data.groupby(['Clase de coste', 'Centro de coste'])
     
     for name, group in groups:
@@ -62,11 +64,13 @@ def eliminar_pares_opuestos(data):
             else:
                 seen_values[(period, value)] = index
         
-        # Eliminar las filas identificadas
+        # Eliminar las filas identificadas y almacenar en removed_df
         group_filtered = group.drop(rows_to_remove)
+        removed_rows = group.loc[rows_to_remove]
+        removed_df = pd.concat([removed_df, removed_rows])
         filtered_df = pd.concat([filtered_df, group_filtered])
     
-    return filtered_df
+    return filtered_df, removed_df
 
 # Cargar los datos
 data0 = load_data(DATA0_URL)
@@ -75,15 +79,13 @@ orders_data = load_data(ORDERS_URL)
 
 # Procesamiento de data0
 data0 = eliminar_filas_grupo_ceco(data0)
-data0 = eliminar_pares_opuestos(data0)
+data0, removed_data = eliminar_pares_opuestos(data0)
 
 # Asegurarse de que 'Ejercicio' y 'Período' son de tipo string
 data0['Ejercicio'] = data0['Ejercicio'].astype(str)
 data0['Período'] = data0['Período'].astype(str)
 budget_data['Año'] = budget_data['Año'].astype(str)
 budget_data['Mes'] = budget_data['Mes'].astype(str)
-
-import io
 
 # Función para convertir DataFrame a CSV
 def convertir_a_csv(df):
@@ -92,14 +94,14 @@ def convertir_a_csv(df):
     buffer.seek(0)
     return buffer.getvalue()
 
-# Generar el enlace de descarga para los datos filtrados y procesados
-csv_data_filtrada = convertir_a_csv(data0)
+# Generar el enlace de descarga para las filas eliminadas
+csv_removed_data = convertir_a_csv(removed_data)
 
 # Agregar un botón de descarga en la aplicación
 st.download_button(
-    label="Descargar Datos Filtrados y Procesados",
-    data=csv_data_filtrada,
-    file_name='datos_filtrados_procesados.csv',
+    label="Descargar Filas Eliminadas",
+    data=csv_removed_data,
+    file_name='filas_eliminadas.csv',
     mime='text/csv',
 )
 
