@@ -64,6 +64,26 @@ data0['Período'] = data0['Período'].astype(str)
 budget_data['Año'] = budget_data['Año'].astype(str)
 budget_data['Mes'] = budget_data['Mes'].astype(str)
 
+import io
+
+# Función para convertir DataFrame a CSV
+def convertir_a_csv(df):
+    buffer = io.StringIO()
+    df.to_csv(buffer, index=False, sep=';')
+    buffer.seek(0)
+    return buffer.getvalue()
+
+# Generar el enlace de descarga para los datos filtrados y procesados
+csv_data_filtrada = convertir_a_csv(data0)
+
+# Agregar un botón de descarga en la aplicación
+st.download_button(
+    label="Descargar Datos Filtrados y Procesados",
+    data=csv_data_filtrada,
+    file_name='datos_filtrados_procesados.csv',
+    mime='text/csv',
+)
+
 # Filtro lateral para seleccionar Sociedad
 with st.sidebar:
     st.header("Parámetros")
@@ -110,7 +130,7 @@ gasto_real['Valor/mon.inf.'] = (gasto_real['Valor/mon.inf.'] / 1000000).round(1)
 gasto_real = gasto_real.rename(columns={'Ejercicio': 'Año', 'Período': 'Mes'})
 
 # Comentar tabla de gastos agrupados
-st.write("Gasto real agrupado y convertido:", gasto_real.head())
+# st.write("Gasto real agrupado y convertido:", gasto_real.head())
 
 gasto_presupuestado = budget_data.groupby(['Año', 'Mes'])['Presupuesto'].sum().reset_index()
 gasto_presupuestado['Presupuesto'] = gasto_presupuestado['Presupuesto'].round(1)
@@ -126,26 +146,6 @@ gasto_presupuestado['Mes'] = gasto_presupuestado['Mes'].astype(int)  # Convertir
 
 # Crear la tabla combinada
 combined_data = pd.merge(gasto_real, gasto_presupuestado, on=['Año', 'Mes'], how='outer').fillna(0)
-
-import io
-
-# Función para convertir DataFrame a CSV
-def convertir_a_csv(df):
-    buffer = io.StringIO()
-    df.to_csv(buffer, index=False, sep=';')
-    buffer.seek(0)
-    return buffer.getvalue()
-
-# Generar el enlace de descarga para los datos de gasto real agrupados
-csv_gasto_real = convertir_a_csv(gasto_real)
-
-# Agregar un botón de descarga en la aplicación
-st.download_button(
-    label="Descargar Gasto Real Agrupado",
-    data=csv_gasto_real,
-    file_name='gasto_real_agrupado.csv',
-    mime='text/csv',
-)
 
 # Comentar la tabla de datos combinados
 # st.write("Datos combinados:", combined_data.head())
