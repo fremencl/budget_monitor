@@ -110,7 +110,7 @@ gasto_real['Valor/mon.inf.'] = (gasto_real['Valor/mon.inf.'] / 1000000).round(1)
 gasto_real = gasto_real.rename(columns={'Ejercicio': 'Año', 'Período': 'Mes'})
 
 # Comentar tabla de gastos agrupados
-# st.write("Gasto real agrupado y convertido:", gasto_real.head())
+st.write("Gasto real agrupado y convertido:", gasto_real.head())
 
 gasto_presupuestado = budget_data.groupby(['Año', 'Mes'])['Presupuesto'].sum().reset_index()
 gasto_presupuestado['Presupuesto'] = gasto_presupuestado['Presupuesto'].round(1)
@@ -136,7 +136,7 @@ combined_data['Diferencia'] = combined_data['Valor/mon.inf.'] - combined_data['P
 combined_data = combined_data.sort_values(by=['Año', 'Mes'])
 
 # Mostrar las tablas en la aplicación Streamlit
-st.markdown("### ANÁLISIS DE GASTO Y PRESUPUESTO")
+st.markdown("#### ANÁLISIS DE GASTO Y PRESUPUESTO")
 
 # Tabla combinada
 st.markdown("#### Tabla de Gasto Real vs Presupuestado")
