@@ -231,7 +231,7 @@ else:
     col2.markdown(f"<div style='{color_presupuesto} padding: 10px; border-radius: 5px; text-align: center;'>Gasto acumulado presupuestado<br><strong>No disponible</strong></div>", unsafe_allow_html=True)
 
 # Nueva sección: Tabla de los 10 mayores gastos
-st.markdown("#### Mayores Gastos")
+st.markdown("#### Top 10 Mayores Gastos")
 
 # Filtrar y ordenar data0 para obtener los 10 mayores gastos
 data0_sorted = data0.sort_values(by='Valor/mon.inf.', ascending=False)
