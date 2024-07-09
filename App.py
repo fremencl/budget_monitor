@@ -10,7 +10,7 @@ st.markdown("<h1 style='text-align: center; color: black; font-size: 24px;'>MONI
 # Definimos las URLs de los archivos de referencia
 DATA0_URL = 'https://streamlitmaps.s3.amazonaws.com/Data_0524.csv'
 BUDGET_URL = 'https://streamlitmaps.s3.amazonaws.com/Base_Presupuesto.csv'
-ORDERS_URL = 'https://streamlitmaps.s3.amazonaws.com/Base_Ordenes.csv'
+ORDERS_URL = 'https://streamlitmaps.s3.amazonaws.com/Base_Ordenes_2.csv'
 BASE_UTEC_URL = 'https://streamlitmaps.s3.amazonaws.com/Base_UTEC_BudgetVersion.csv'
 BASE_CECO_URL = 'https://streamlitmaps.s3.amazonaws.com/Base_Ceco_2.csv'
 
