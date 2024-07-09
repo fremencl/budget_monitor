@@ -10,7 +10,8 @@ st.markdown("<h1 style='text-align: center; color: black; font-size: 24px;'>MONI
 # Definimos las URLs de los archivos de referencia
 DATA0_URL = 'https://streamlitmaps.s3.amazonaws.com/Data_0524.csv'
 BUDGET_URL = 'https://streamlitmaps.s3.amazonaws.com/Base_Presupuesto.csv'
-ORDERS_URL = 'https://streamlitmaps.s3.amazonaws.com/Base_Ordenes.csv'
+BASE_UTEC_URL = 'https://streamlitmaps.s3.amazonaws.com/Base_UTEC_BudgetVersion.csv'
+BASE_CECO_URL = 'https://streamlitmaps.s3.amazonaws.com/Base_Ceco_2.csv'
 
 # Función para cargar el archivo de referencia
 @st.cache_data
@@ -78,7 +79,12 @@ def eliminar_pares_opuestos(data):
 # Cargar los datos
 data0 = load_data(DATA0_URL)
 budget_data = load_data(BUDGET_URL)
-orders_data = load_data(ORDERS_URL)
+base_utec_data = load_data(BASE_UTEC_URL)
+base_ceco_data = load_data(BASE_CECO_URL)
+
+data0['Utec'] = None
+data0['Proceso'] = None
+data0['Recinto'] = None
 
 # Procesamiento de data0
 data0 = eliminar_filas_grupo_ceco(data0)
@@ -90,6 +96,37 @@ data0['Período'] = data0['Período'].astype(str)
 budget_data['Año'] = budget_data['Año'].astype(str)
 budget_data['Mes'] = budget_data['Mes'].astype(str)
 
+# Primer mapeo para asociar Utec
+data0 = data0.merge(orders_data[['Orden', 'Utec']], how='left', left_on='Orden partner', right_on='Orden')
+data0['Utec'] = data0['Utec_y']
+data0.drop(columns=['Utec_y', 'Orden'], inplace=True)
+
+# Segundo mapeo para asociar Proceso
+data0 = data0.merge(base_utec_data[['Utec', 'Proceso']], how='left', on='Utec')
+data0['Proceso'] = data0['Proceso_y']
+data0.drop(columns=['Proceso_y'], inplace=True)
+
+# Tercer mapeo para asignar Recinto
+data0 = data0.merge(base_utec_data[['Utec', 'Recinto']], how='left', on='Utec')
+data0['Recinto'] = data0['Recinto_y']
+data0.drop(columns=['Recinto_y'], inplace=True)
+
+# Filtrado para trabajar solo con las filas sin Proceso y Recinto
+data0_incomplete = data0[(data0['Proceso'].isna()) & (data0['Recinto'].isna())]
+
+# Cuarto mapeo para asignar Proceso a partir del Ceco 
+data0_incomplete = data0_incomplete.merge(base_ceco_data[['Ceco', 'Proceso']], how='left', left_on='Centro de coste', right_on='Ceco')
+data0_incomplete['Proceso'] = data0_incomplete['Proceso_y']
+data0_incomplete.drop(columns=['Proceso_y', 'Ceco'], inplace=True)
+
+# Quinto mapeo para asignar Recinto a partir del Ceco
+data0_incomplete = data0_incomplete.merge(base_ceco_data[['Ceco', 'Recinto']], how='left', left_on='Centro de coste', right_on='Ceco')
+data0_incomplete['Recinto'] = data0_incomplete['Recinto_y']
+data0_incomplete.drop(columns=['Recinto_y', 'Ceco'], inplace=True)
+
+# Merge data0
+data0.update(data0_incomplete)
+
 # Función para convertir DataFrame a CSV
 def convertir_a_csv(df):
     buffer = io.StringIO()
@@ -97,70 +134,46 @@ def convertir_a_csv(df):
     buffer.seek(0)
     return buffer.getvalue()
 
-# Generar el enlace de descarga para las filas eliminadas
-# csv_removed_data = convertir_a_csv(removed_data)
-
-# Agregar un botón de descarga en la aplicación
-#st.download_button(
-#    label="Descargar Filas Eliminadas",
-#    data=csv_removed_data,
-#    file_name='filas_eliminadas.csv',
-#    mime='text/csv',
-#)
-
-# Filtro lateral para seleccionar Sociedad
 with st.sidebar:
     st.header("Parámetros")
-    opciones_año = ['2024'] + sorted(data0['Ejercicio'].unique())
-    opcion_año = st.selectbox('Año', opciones_año)
-
-    opciones_area = ['Todos'] + sorted(data0['Area'].unique())
-    opcion_area = st.selectbox('Area', opciones_area)
-
+    opcion_año = st.selectbox('Año', ['2024'] + sorted(data0['Ejercicio'].unique()))
+    
+    opciones_proceso = ['Todos'] + sorted(data0['Proceso'].unique())
+    opcion_proceso = st.selectbox('Proceso', opciones_proceso)
+    
     opciones_fam_cuenta = ['Todos'] + sorted(data0['Familia_Cuenta'].unique())
     opcion_fam_cuenta = st.selectbox('Familia_Cuenta', opciones_fam_cuenta)
-
+    
     opciones_clase_coste = ['Todos'] + sorted(data0['Clase de coste'].unique())
     opcion_clase_coste = st.selectbox('Clase de coste', opciones_clase_coste)
+    
+    opciones_recinto = ['Todos'] + sorted(data0['Recinto'].unique())
+    opcion_recinto = st.selectbox('Recinto', opciones_recinto)
 
-    opciones_grupo_ceco = ['Todos'] + sorted(data0['Grupo_Ceco'].unique())
-    opcion_grupo_ceco = st.selectbox('Grupo_Ceco', opciones_grupo_ceco)
-
-# Aplicar los filtros seleccionados a ambos DataFrames
-def aplicar_filtros(data, opcion_año, opcion_area, opcion_fam_cuenta, opcion_clase_coste, opcion_grupo_ceco, col_año):
+def aplicar_filtros(data, opcion_año, opcion_proceso, opcion_fam_cuenta, opcion_clase_coste, opcion_recinto, col_año):
     if opcion_año != 'Todos':
         data = data[data[col_año] == opcion_año]
-    if opcion_area != 'Todos':
-        data = data[data['Area'] == opcion_area]
+    if opcion_proceso != 'Todos':
+        data = data[data['Proceso'] == opcion_proceso]
     if opcion_fam_cuenta != 'Todos':
         data = data[data['Familia_Cuenta'] == opcion_fam_cuenta]
     if opcion_clase_coste != 'Todos':
         data = data[data['Clase de coste'] == opcion_clase_coste]
-    if opcion_grupo_ceco != 'Todos':
-        data = data[data['Grupo_Ceco'] == opcion_grupo_ceco]
+    if opcion_recinto != 'Todos':
+        data = data[data['Recinto'] == opcion_recinto]
     return data
 
 # Filtrar los datos
-data0 = aplicar_filtros(data0, opcion_año, opcion_area, opcion_fam_cuenta, opcion_clase_coste, opcion_grupo_ceco, 'Ejercicio')
-budget_data = aplicar_filtros(budget_data, opcion_año, opcion_area, opcion_fam_cuenta, opcion_clase_coste, opcion_grupo_ceco, 'Año')
-
-# Comentar las tablas de datos filtrados
-# st.write("Datos filtrados de gasto real:", data0.head())
-# st.write("Datos filtrados de presupuesto:", budget_data.head())
+data0 = aplicar_filtros(data0, opcion_año, opcion_proceso, opcion_fam_cuenta, opcion_clase_coste, opcion_recinto, 'Ejercicio')
+budget_data = aplicar_filtros(budget_data, opcion_año, opcion_proceso, opcion_fam_cuenta, opcion_clase_coste, opcion_recinto, 'Año')
 
 # Calcular las sumas por año y mes para Gasto Real y Gasto Presupuestado
 gasto_real = data0.groupby(['Ejercicio', 'Período'])['Valor/mon.inf.'].sum().reset_index()
 gasto_real['Valor/mon.inf.'] = (gasto_real['Valor/mon.inf.'] / 1000000).round(1)  # Convertir a millones con un decimal
 gasto_real = gasto_real.rename(columns={'Ejercicio': 'Año', 'Período': 'Mes'})
 
-# Comentar tabla de gastos agrupados
-# st.write("Gasto real agrupado y convertido:", gasto_real.head())
-
 gasto_presupuestado = budget_data.groupby(['Año', 'Mes'])['Presupuesto'].sum().reset_index()
 gasto_presupuestado['Presupuesto'] = gasto_presupuestado['Presupuesto'].round(1)
-
-# Comentar tabla de gastos presupuestados agrupados
-# st.write("Gasto presupuestado agrupado:", gasto_presupuestado.head())
 
 # Asegurarse de que las columnas son del mismo tipo
 gasto_real['Año'] = gasto_real['Año'].astype(str)
@@ -171,16 +184,10 @@ gasto_presupuestado['Mes'] = gasto_presupuestado['Mes'].astype(int)  # Convertir
 # Crear la tabla combinada
 combined_data = pd.merge(gasto_real, gasto_presupuestado, on=['Año', 'Mes'], how='outer').fillna(0)
 
-# Comentar la tabla de datos combinados
-# st.write("Datos combinados:", combined_data.head())
-
 combined_data['Diferencia'] = combined_data['Valor/mon.inf.'] - combined_data['Presupuesto']
 
 # Ordenar las columnas de manera ascendente
 combined_data = combined_data.sort_values(by=['Año', 'Mes'])
-
-# Mostrar las tablas en la aplicación Streamlit
-#st.markdown("#### ANÁLISIS DE GASTO Y PRESUPUESTO")
 
 # Tabla combinada
 st.markdown("#### Tabla de Gasto Real vs Presupuestado")
