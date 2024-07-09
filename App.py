@@ -10,7 +10,7 @@ st.markdown("<h1 style='text-align: center; color: black; font-size: 24px;'>MONI
 # Definimos las URLs de los archivos de referencia
 DATA0_URL = 'https://streamlitmaps.s3.amazonaws.com/Data_0524.csv'
 BUDGET_URL = 'https://streamlitmaps.s3.amazonaws.com/Base_Presupuesto.csv'
-ORDERS_URL = 'https://streamlitmaps.s3.amazonaws.com/Base_Ordenes_2.csv'
+ORDERS_URL = 'https://streamlitmaps.s3.amazonaws.com/Base_Ordenes.csv'
 BASE_UTEC_URL = 'https://streamlitmaps.s3.amazonaws.com/Base_UTEC_BudgetVersion.csv'
 BASE_CECO_URL = 'https://streamlitmaps.s3.amazonaws.com/Base_Ceco_2.csv'
 
@@ -22,71 +22,12 @@ def load_data(url):
         data['Valor/mon.inf.'] = pd.to_numeric(data['Valor/mon.inf.'].str.replace(',', ''), errors='coerce').fillna(0)
     return data
 
-# Función para eliminar filas con valores específicos en "Grupo_Ceco"
-def eliminar_filas_grupo_ceco(data):
-    valores_excluir = ["Abastecimiento y contratos", "Finanzas", "Servicios generales"]
-    return data[~data['Grupo_Ceco'].isin(valores_excluir)]
-
-# Función para identificar y eliminar pares de valores opuestos
-def eliminar_pares_opuestos(data):
-    filtered_df = pd.DataFrame()
-    removed_df = pd.DataFrame()
-    groups = data.groupby(['Clase de coste', 'Centro de coste'])
-    
-    for name, group in groups:
-        seen_values = {}
-        rows_to_remove = set()
-        
-        # Ordenar el grupo por 'Período' de forma ascendente para procesar en orden temporal
-        group = group.sort_values(by='Período')
-        
-        for index, row in group.iterrows():
-            value = row['Valor/mon.inf.']
-            period = row['Período']
-            
-            if value < 0:
-                # Buscar coincidencia en el mismo período
-                if (period, -value) in seen_values:
-                    opposite_index = seen_values[(period, -value)]
-                    rows_to_remove.add(index)
-                    rows_to_remove.add(opposite_index)
-                    del seen_values[(period, -value)]
-                else:
-                    # Buscar coincidencia en períodos anteriores
-                    for past_period in range(period - 1, 0, -1):
-                        if (past_period, -value) in seen_values:
-                            opposite_index = seen_values[(past_period, -value)]
-                            rows_to_remove.add(index)
-                            rows_to_remove.add(opposite_index)
-                            del seen_values[(past_period, -value)]
-                            break
-                    else:
-                        # No se encontró coincidencia, mantener el valor negativo
-                        seen_values[(period, value)] = index
-            else:
-                seen_values[(period, value)] = index
-        
-        # Convertir el set a una lista para indexar
-        rows_to_remove_list = list(rows_to_remove)
-        
-        # Eliminar las filas identificadas y almacenar en removed_df
-        group_filtered = group.drop(rows_to_remove_list)
-        removed_rows = group.loc[rows_to_remove_list]
-        removed_df = pd.concat([removed_df, removed_rows])
-        filtered_df = pd.concat([filtered_df, group_filtered])
-    
-    return filtered_df, removed_df
-
 # Cargar los datos
 data0 = load_data(DATA0_URL)
 budget_data = load_data(BUDGET_URL)
-orders_data = load_data(ORDERS_URL)
+orders_data = load_data(ORDERS_URL)  # Asegúrate de cargar orders_data desde ORDERS_URL
 base_utec_data = load_data(BASE_UTEC_URL)
 base_ceco_data = load_data(BASE_CECO_URL)
-
-data0['Utec'] = None
-data0['Proceso'] = None
-data0['Recinto'] = None
 
 # Procesamiento de data0
 data0 = eliminar_filas_grupo_ceco(data0)
@@ -98,60 +39,63 @@ data0['Período'] = data0['Período'].astype(str)
 budget_data['Año'] = budget_data['Año'].astype(str)
 budget_data['Mes'] = budget_data['Mes'].astype(str)
 
+# Agregar nuevas columnas a data0
+data0['Utec'] = None
+data0['Proceso'] = None
+data0['Recinto'] = None
+
 # Primer mapeo: Asignar Utec utilizando ORDERS_URL
 data0 = data0.merge(orders_data[['Orden', 'Utec']], how='left', left_on='Orden partner', right_on='Orden')
 data0['Utec'] = data0['Utec_y']
 data0.drop(columns=['Utec_y', 'Orden'], inplace=True)
 
-# Eliminar columnas duplicadas antes del segundo mapeo
-if 'Proceso' in data0.columns:  # Línea agregada
-    data0.drop(columns=['Proceso'], inplace=True)  # Línea agregada
+# Verificar que la columna 'Proceso' no existe antes del segundo mapeo
+if 'Proceso' in data0.columns:
+    data0.drop(columns=['Proceso'], inplace=True)
 
 # Segundo mapeo: Asignar Proceso utilizando Base_UTEC_BudgetVersion.csv
 data0 = data0.merge(base_utec_data[['Utec', 'Proceso']], how='left', on='Utec')
-data0['Proceso'] = data0['Proceso_y']
-data0.drop(columns=['Proceso_y'], inplace=True)
+if 'Proceso_y' in data0.columns:  # Verificar si 'Proceso_y' existe después del merge
+    data0['Proceso'] = data0['Proceso_y']
+    data0.drop(columns=['Proceso_y'], inplace=True)
 
-# Eliminar columnas duplicadas antes del tercer mapeo
-if 'Recinto' in data0.columns:  # Línea agregada
-    data0.drop(columns=['Recinto'], inplace=True)  # Línea agregada
+# Verificar que la columna 'Recinto' no existe antes del tercer mapeo
+if 'Recinto' in data0.columns:
+    data0.drop(columns=['Recinto'], inplace=True)
 
 # Asignar Recinto utilizando Base_UTEC_BudgetVersion.csv
 data0 = data0.merge(base_utec_data[['Utec', 'Recinto']], how='left', on='Utec')
-data0['Recinto'] = data0['Recinto_y']
-data0.drop(columns=['Recinto_y'], inplace=True)
+if 'Recinto_y' in data0.columns:  # Verificar si 'Recinto_y' existe después del merge
+    data0['Recinto'] = data0['Recinto_y']
+    data0.drop(columns=['Recinto_y'], inplace=True)
 
 # Filtrar filas sin Proceso y Recinto completos
 data0_incomplete = data0[(data0['Proceso'].isna()) & (data0['Recinto'].isna())]
 
-# Eliminar columnas duplicadas antes del cuarto mapeo
-if 'Proceso' in data0_incomplete.columns:  # Línea agregada
-    data0_incomplete.drop(columns=['Proceso'], inplace=True)  # Línea agregada
+# Verificar que la columna 'Proceso' no existe antes del cuarto mapeo
+if 'Proceso' in data0_incomplete.columns:
+    data0_incomplete.drop(columns=['Proceso'], inplace=True)
 
 # Tercer mapeo: Asignar Proceso utilizando Base_Ceco_2.csv
 data0_incomplete = data0_incomplete.merge(base_ceco_data[['Ceco', 'Proceso']], how='left', left_on='Centro de coste', right_on='Ceco')
-data0_incomplete['Proceso'] = data0_incomplete['Proceso_y']
-data0_incomplete.drop(columns=['Proceso_y', 'Ceco'], inplace=True)
+if 'Proceso_y' in data0_incomplete.columns:  # Verificar si 'Proceso_y' existe después del merge
+    data0_incomplete['Proceso'] = data0_incomplete['Proceso_y']
+    data0_incomplete.drop(columns=['Proceso_y', 'Ceco'], inplace=True)
 
-# Eliminar columnas duplicadas antes del quinto mapeo
-if 'Recinto' in data0_incomplete.columns:  # Línea agregada
-    data0_incomplete.drop(columns=['Recinto'], inplace=True)  # Línea agregada
+# Verificar que la columna 'Recinto' no existe antes del quinto mapeo
+if 'Recinto' in data0_incomplete.columns:
+    data0_incomplete.drop(columns=['Recinto'], inplace=True)
 
 # Asignar Recinto utilizando Base_Ceco_2.csv
 data0_incomplete = data0_incomplete.merge(base_ceco_data[['Ceco', 'Recinto']], how='left', left_on='Centro de coste', right_on='Ceco')
-data0_incomplete['Recinto'] = data0_incomplete['Recinto_y']
-data0_incomplete.drop(columns=['Recinto_y', 'Ceco'], inplace=True)
+if 'Recinto_y' in data0_incomplete.columns:  # Verificar si 'Recinto_y' existe después del merge
+    data0_incomplete['Recinto'] = data0_incomplete['Recinto_y']
+    data0_incomplete.drop(columns=['Recinto_y', 'Ceco'], inplace=True)
 
 # Unir los datos completos e incompletos
 data0.update(data0_incomplete)
 
-# Función para convertir DataFrame a CSV
-def convertir_a_csv(df):
-    buffer = io.StringIO()
-    df.to_csv(buffer, index=False, sep=';')
-    buffer.seek(0)
-    return buffer.getvalue()
-
+# Filtros Laterales
 with st.sidebar:
     st.header("Parámetros")
     opcion_año = st.selectbox('Año', ['2024'] + sorted(data0['Ejercicio'].unique()))
@@ -168,6 +112,7 @@ with st.sidebar:
     opciones_recinto = ['Todos'] + sorted(data0['Recinto'].unique())
     opcion_recinto = st.selectbox('Recinto', opciones_recinto)
 
+# Aplicar filtros seleccionados a los DataFrames
 def aplicar_filtros(data, opcion_año, opcion_proceso, opcion_fam_cuenta, opcion_clase_coste, opcion_recinto, col_año):
     if opcion_año != 'Todos':
         data = data[data[col_año] == opcion_año]
@@ -181,7 +126,6 @@ def aplicar_filtros(data, opcion_año, opcion_proceso, opcion_fam_cuenta, opcion
         data = data[data['Recinto'] == opcion_recinto]
     return data
 
-# Filtrar los datos
 data0 = aplicar_filtros(data0, opcion_año, opcion_proceso, opcion_fam_cuenta, opcion_clase_coste, opcion_recinto, 'Ejercicio')
 budget_data = aplicar_filtros(budget_data, opcion_año, opcion_proceso, opcion_fam_cuenta, opcion_clase_coste, opcion_recinto, 'Año')
 
