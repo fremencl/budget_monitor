@@ -10,7 +10,7 @@ st.markdown("<h1 style='text-align: center; color: black; font-size: 24px;'>MONI
 # Definimos las URLs de los archivos de referencia
 DATA0_URL = 'https://streamlitmaps.s3.amazonaws.com/Data_0524.csv'
 BUDGET_URL = 'https://streamlitmaps.s3.amazonaws.com/Base_Presupuesto.csv'
-ORDERS_URL = 'https://streamlitmaps.s3.amazonaws.com/Base_Ordenes_2.csv'
+ORDERS_URL = 'https://streamlitmaps.s3.amazonaws.com/Base_Ordenes.csv'
 BASE_UTEC_URL = 'https://streamlitmaps.s3.amazonaws.com/Base_UTEC_BudgetVersion.csv'
 BASE_CECO_URL = 'https://streamlitmaps.s3.amazonaws.com/Base_Ceco_2.csv'
 
@@ -111,6 +111,8 @@ data0['Recinto'] = None
 
 # Primer mapeo: Asignar Utec utilizando ORDERS_URL
 if 'Orden partner' in data0.columns and 'Orden' in orders_data.columns:
+    if 'Utec' in data0.columns:
+        data0.drop(columns=['Utec'], inplace=True)  # Eliminar columna Utec antes del merge
     data0 = data0.merge(orders_data[['Orden', 'Utec']], how='left', left_on='Orden partner', right_on='Orden')
     data0['Utec'] = data0['Utec_y']
     data0.drop(columns=['Utec_y', 'Orden'], inplace=True)
@@ -177,7 +179,6 @@ data0.update(data0_incomplete)
 
 # Convertir todos los valores en la columna 'Proceso' a cadenas para evitar el error de ordenación
 data0['Proceso'] = data0['Proceso'].astype(str)
-data0['Recinto'] = data0['Recinto'].astype(str)
 
 # Filtros Laterales
 with st.sidebar:
