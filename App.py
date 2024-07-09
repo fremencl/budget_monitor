@@ -144,7 +144,7 @@ else:
     st.error("No se encontraron las columnas necesarias para el tercer mapeo")
 
 # Filtrar filas sin Proceso y Recinto completos
-data0_incomplete = data0[(data0['Proceso'].isna()) & (data0['Recinto'].isna())]
+data0_incomplete = data0[(data0['Proceso'].isna()) & (data0['Recinto'].isna())].copy()  # Crear una copia explícita
 
 # Verificar que la columna 'Proceso' no existe antes del cuarto mapeo
 if 'Proceso' in data0_incomplete.columns:
@@ -210,7 +210,6 @@ def aplicar_filtros(data, opcion_año, opcion_proceso, opcion_fam_cuenta, opcion
         data = data[data['Recinto'] == opcion_recinto]
     return data
 
-# Aplicar filtros
 data0 = aplicar_filtros(data0, opcion_año, opcion_proceso, opcion_fam_cuenta, opcion_clase_coste, opcion_recinto, 'Ejercicio')
 budget_data = aplicar_filtros(budget_data, opcion_año, opcion_proceso, opcion_fam_cuenta, opcion_clase_coste, opcion_recinto, 'Año')
 
