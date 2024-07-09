@@ -97,7 +97,7 @@ budget_data['Año'] = budget_data['Año'].astype(str)
 budget_data['Mes'] = budget_data['Mes'].astype(str)
 
 # Primer mapeo para asociar Utec
-data0 = data0.merge(orders_data[['Orden', 'Utec']], how='left', left_on='Orden partner', right_on='Orden')
+data0 = data0.merge(base_utec_data[['Orden', 'Utec']], how='left', left_on='Orden partner', right_on='Orden')
 data0['Utec'] = data0['Utec_y']
 data0.drop(columns=['Utec_y', 'Orden'], inplace=True)
 
