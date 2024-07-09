@@ -21,6 +21,60 @@ def load_data(url):
     if 'Valor/mon.inf.' in data.columns:
         data['Valor/mon.inf.'] = pd.to_numeric(data['Valor/mon.inf.'].str.replace(',', ''), errors='coerce').fillna(0)
     return data
+# Función para eliminar filas con valores específicos en "Grupo_Ceco"
+def eliminar_filas_grupo_ceco(data):
+    valores_excluir = ["Abastecimiento y contratos", "Finanzas", "Servicios generales"]
+    return data[~data['Grupo_Ceco'].isin(valores_excluir)]
+
+# Función para identificar y eliminar pares de valores opuestos
+def eliminar_pares_opuestos(data):
+    filtered_df = pd.DataFrame()
+    removed_df = pd.DataFrame()
+    groups = data.groupby(['Clase de coste', 'Centro de coste'])
+    
+    for name, group in groups:
+        seen_values = {}
+        rows_to_remove = set()
+        
+        # Ordenar el grupo por 'Período' de forma ascendente para procesar en orden temporal
+        group = group.sort_values(by='Período')
+        
+        for index, row in group.iterrows():
+            value = row['Valor/mon.inf.']
+            period = row['Período']
+            
+            if value < 0:
+                # Buscar coincidencia en el mismo período
+                if (period, -value) in seen_values:
+                    opposite_index = seen_values[(period, -value)]
+                    rows_to_remove.add(index)
+                    rows_to_remove.add(opposite_index)
+                    del seen_values[(period, -value)]
+                else:
+                    # Buscar coincidencia en períodos anteriores
+                    for past_period in range(period - 1, 0, -1):
+                        if (past_period, -value) in seen_values:
+                            opposite_index = seen_values[(past_period, -value)]
+                            rows_to_remove.add(index)
+                            rows_to_remove.add(opposite_index)
+                            del seen_values[(past_period, -value)]
+                            break
+                    else:
+                        # No se encontró coincidencia, mantener el valor negativo
+                        seen_values[(period, value)] = index
+            else:
+                seen_values[(period, value)] = index
+        
+        # Convertir el set a una lista para indexar
+        rows_to_remove_list = list(rows_to_remove)
+        
+        # Eliminar las filas identificadas y almacenar en removed_df
+        group_filtered = group.drop(rows_to_remove_list)
+        removed_rows = group.loc[rows_to_remove_list]
+        removed_df = pd.concat([removed_df, removed_rows])
+        filtered_df = pd.concat([filtered_df, group_filtered])
+    
+    return filtered_df, removed_df
 
 # Cargar los datos
 data0 = load_data(DATA0_URL)
