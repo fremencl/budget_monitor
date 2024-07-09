@@ -10,7 +10,7 @@ st.markdown("<h1 style='text-align: center; color: black; font-size: 24px;'>MONI
 # Definimos las URLs de los archivos de referencia
 DATA0_URL = 'https://streamlitmaps.s3.amazonaws.com/Data_0524.csv'
 BUDGET_URL = 'https://streamlitmaps.s3.amazonaws.com/Base_Presupuesto.csv'
-ORDERS_URL = 'https://streamlitmaps.s3.amazonaws.com/Base_Ordenes_2.csv'
+ORDERS_URL = 'https://streamlitmaps.s3.amazonaws.com/Base_Ordenes.csv'
 BASE_UTEC_URL = 'https://streamlitmaps.s3.amazonaws.com/Base_UTEC_BudgetVersion.csv'
 BASE_CECO_URL = 'https://streamlitmaps.s3.amazonaws.com/Base_Ceco_2.csv'
 
@@ -175,6 +175,9 @@ else:
 # Unir los datos completos e incompletos
 data0.update(data0_incomplete)
 
+# Convertir todos los valores en la columna 'Proceso' a cadenas para evitar el error de ordenación
+data0['Proceso'] = data0['Proceso'].astype(str)
+
 # Filtros Laterales
 with st.sidebar:
     st.header("Parámetros")
@@ -206,6 +209,7 @@ def aplicar_filtros(data, opcion_año, opcion_proceso, opcion_fam_cuenta, opcion
         data = data[data['Recinto'] == opcion_recinto]
     return data
 
+# Aplicar filtros
 data0 = aplicar_filtros(data0, opcion_año, opcion_proceso, opcion_fam_cuenta, opcion_clase_coste, opcion_recinto, 'Ejercicio')
 budget_data = aplicar_filtros(budget_data, opcion_año, opcion_proceso, opcion_fam_cuenta, opcion_clase_coste, opcion_recinto, 'Año')
 
