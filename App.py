@@ -103,30 +103,46 @@ data0 = data0.merge(orders_data[['Orden', 'Utec']], how='left', left_on='Orden p
 data0['Utec'] = data0['Utec_y']
 data0.drop(columns=['Utec_y', 'Orden'], inplace=True)
 
-# Segundo mapeo para asociar Proceso
+# Eliminar columnas duplicadas antes del segundo mapeo
+if 'Proceso' in data0.columns:  # Línea agregada
+    data0.drop(columns=['Proceso'], inplace=True)  # Línea agregada
+
+# Segundo mapeo: Asignar Proceso utilizando Base_UTEC_BudgetVersion.csv
 data0 = data0.merge(base_utec_data[['Utec', 'Proceso']], how='left', on='Utec')
 data0['Proceso'] = data0['Proceso_y']
 data0.drop(columns=['Proceso_y'], inplace=True)
 
-# Tercer mapeo para asignar Recinto
+# Eliminar columnas duplicadas antes del tercer mapeo
+if 'Recinto' in data0.columns:  # Línea agregada
+    data0.drop(columns=['Recinto'], inplace=True)  # Línea agregada
+
+# Asignar Recinto utilizando Base_UTEC_BudgetVersion.csv
 data0 = data0.merge(base_utec_data[['Utec', 'Recinto']], how='left', on='Utec')
 data0['Recinto'] = data0['Recinto_y']
 data0.drop(columns=['Recinto_y'], inplace=True)
 
-# Filtrado para trabajar solo con las filas sin Proceso y Recinto
+# Filtrar filas sin Proceso y Recinto completos
 data0_incomplete = data0[(data0['Proceso'].isna()) & (data0['Recinto'].isna())]
 
-# Cuarto mapeo para asignar Proceso a partir del Ceco 
+# Eliminar columnas duplicadas antes del cuarto mapeo
+if 'Proceso' in data0_incomplete.columns:  # Línea agregada
+    data0_incomplete.drop(columns=['Proceso'], inplace=True)  # Línea agregada
+
+# Tercer mapeo: Asignar Proceso utilizando Base_Ceco_2.csv
 data0_incomplete = data0_incomplete.merge(base_ceco_data[['Ceco', 'Proceso']], how='left', left_on='Centro de coste', right_on='Ceco')
 data0_incomplete['Proceso'] = data0_incomplete['Proceso_y']
 data0_incomplete.drop(columns=['Proceso_y', 'Ceco'], inplace=True)
 
-# Quinto mapeo para asignar Recinto a partir del Ceco
+# Eliminar columnas duplicadas antes del quinto mapeo
+if 'Recinto' in data0_incomplete.columns:  # Línea agregada
+    data0_incomplete.drop(columns=['Recinto'], inplace=True)  # Línea agregada
+
+# Asignar Recinto utilizando Base_Ceco_2.csv
 data0_incomplete = data0_incomplete.merge(base_ceco_data[['Ceco', 'Recinto']], how='left', left_on='Centro de coste', right_on='Ceco')
 data0_incomplete['Recinto'] = data0_incomplete['Recinto_y']
 data0_incomplete.drop(columns=['Recinto_y', 'Ceco'], inplace=True)
 
-# Merge data0
+# Unir los datos completos e incompletos
 data0.update(data0_incomplete)
 
 # Función para convertir DataFrame a CSV
