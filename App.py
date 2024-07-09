@@ -10,6 +10,7 @@ st.markdown("<h1 style='text-align: center; color: black; font-size: 24px;'>MONI
 # Definimos las URLs de los archivos de referencia
 DATA0_URL = 'https://streamlitmaps.s3.amazonaws.com/Data_0524.csv'
 BUDGET_URL = 'https://streamlitmaps.s3.amazonaws.com/Base_Presupuesto.csv'
+ORDERS_URL = 'https://streamlitmaps.s3.amazonaws.com/Base_Ordenes_2.csv'
 BASE_UTEC_URL = 'https://streamlitmaps.s3.amazonaws.com/Base_UTEC_BudgetVersion.csv'
 BASE_CECO_URL = 'https://streamlitmaps.s3.amazonaws.com/Base_Ceco_2.csv'
 
@@ -79,6 +80,7 @@ def eliminar_pares_opuestos(data):
 # Cargar los datos
 data0 = load_data(DATA0_URL)
 budget_data = load_data(BUDGET_URL)
+orders_data = load_data(ORDERS_URL)
 base_utec_data = load_data(BASE_UTEC_URL)
 base_ceco_data = load_data(BASE_CECO_URL)
 
@@ -96,8 +98,8 @@ data0['Período'] = data0['Período'].astype(str)
 budget_data['Año'] = budget_data['Año'].astype(str)
 budget_data['Mes'] = budget_data['Mes'].astype(str)
 
-# Primer mapeo para asociar Utec
-data0 = data0.merge(base_utec_data[['Orden', 'Utec']], how='left', left_on='Orden partner', right_on='Orden')
+# Primer mapeo: Asignar Utec utilizando ORDERS_URL
+data0 = data0.merge(orders_data[['Orden', 'Utec']], how='left', left_on='Orden partner', right_on='Orden')
 data0['Utec'] = data0['Utec_y']
 data0.drop(columns=['Utec_y', 'Orden'], inplace=True)
 
