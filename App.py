@@ -21,6 +21,7 @@ def load_data(url):
     if 'Valor/mon.inf.' in data.columns:
         data['Valor/mon.inf.'] = pd.to_numeric(data['Valor/mon.inf.'].str.replace(',', ''), errors='coerce').fillna(0)
     return data
+
 # Función para eliminar filas con valores específicos en "Grupo_Ceco"
 def eliminar_filas_grupo_ceco(data):
     valores_excluir = ["Abastecimiento y contratos", "Finanzas", "Servicios generales"]
@@ -83,6 +84,16 @@ orders_data = load_data(ORDERS_URL)  # Asegúrate de cargar orders_data desde OR
 base_utec_data = load_data(BASE_UTEC_URL)
 base_ceco_data = load_data(BASE_CECO_URL)
 
+# Verificar que las columnas necesarias están presentes en los DataFrames cargados
+assert 'Orden' in orders_data.columns, "La columna 'Orden' no está presente en orders_data"
+assert 'Utec' in orders_data.columns, "La columna 'Utec' no está presente en orders_data"
+assert 'Utec' in base_utec_data.columns, "La columna 'Utec' no está presente en base_utec_data"
+assert 'Proceso' in base_utec_data.columns, "La columna 'Proceso' no está presente en base_utec_data"
+assert 'Recinto' in base_utec_data.columns, "La columna 'Recinto' no está presente en base_utec_data"
+assert 'Ceco' in base_ceco_data.columns, "La columna 'Ceco' no está presente en base_ceco_data"
+assert 'Proceso' in base_ceco_data.columns, "La columna 'Proceso' no está presente en base_ceco_data"
+assert 'Recinto' in base_ceco_data.columns, "La columna 'Recinto' no está presente en base_ceco_data"
+
 # Procesamiento de data0
 data0 = eliminar_filas_grupo_ceco(data0)
 data0, removed_data = eliminar_pares_opuestos(data0)
@@ -99,29 +110,38 @@ data0['Proceso'] = None
 data0['Recinto'] = None
 
 # Primer mapeo: Asignar Utec utilizando ORDERS_URL
-data0 = data0.merge(orders_data[['Orden', 'Utec']], how='left', left_on='Orden partner', right_on='Orden')
-data0['Utec'] = data0['Utec_y']
-data0.drop(columns=['Utec_y', 'Orden'], inplace=True)
+if 'Orden partner' in data0.columns and 'Orden' in orders_data.columns:
+    data0 = data0.merge(orders_data[['Orden', 'Utec']], how='left', left_on='Orden partner', right_on='Orden')
+    data0['Utec'] = data0['Utec_y']
+    data0.drop(columns=['Utec_y', 'Orden'], inplace=True)
+else:
+    st.error("No se encontraron las columnas necesarias para el primer mapeo")
 
 # Verificar que la columna 'Proceso' no existe antes del segundo mapeo
 if 'Proceso' in data0.columns:
     data0.drop(columns=['Proceso'], inplace=True)
 
 # Segundo mapeo: Asignar Proceso utilizando Base_UTEC_BudgetVersion.csv
-data0 = data0.merge(base_utec_data[['Utec', 'Proceso']], how='left', on='Utec')
-if 'Proceso_y' in data0.columns:  # Verificar si 'Proceso_y' existe después del merge
-    data0['Proceso'] = data0['Proceso_y']
-    data0.drop(columns=['Proceso_y'], inplace=True)
+if 'Utec' in data0.columns:
+    data0 = data0.merge(base_utec_data[['Utec', 'Proceso']], how='left', on='Utec')
+    if 'Proceso_y' in data0.columns:  # Verificar si 'Proceso_y' existe después del merge
+        data0['Proceso'] = data0['Proceso_y']
+        data0.drop(columns=['Proceso_y'], inplace=True)
+else:
+    st.error("No se encontraron las columnas necesarias para el segundo mapeo")
 
 # Verificar que la columna 'Recinto' no existe antes del tercer mapeo
 if 'Recinto' in data0.columns:
     data0.drop(columns=['Recinto'], inplace=True)
 
 # Asignar Recinto utilizando Base_UTEC_BudgetVersion.csv
-data0 = data0.merge(base_utec_data[['Utec', 'Recinto']], how='left', on='Utec')
-if 'Recinto_y' in data0.columns:  # Verificar si 'Recinto_y' existe después del merge
-    data0['Recinto'] = data0['Recinto_y']
-    data0.drop(columns=['Recinto_y'], inplace=True)
+if 'Utec' in data0.columns:
+    data0 = data0.merge(base_utec_data[['Utec', 'Recinto']], how='left', on='Utec')
+    if 'Recinto_y' in data0.columns:  # Verificar si 'Recinto_y' existe después del merge
+        data0['Recinto'] = data0['Recinto_y']
+        data0.drop(columns=['Recinto_y'], inplace=True)
+else:
+    st.error("No se encontraron las columnas necesarias para el tercer mapeo")
 
 # Filtrar filas sin Proceso y Recinto completos
 data0_incomplete = data0[(data0['Proceso'].isna()) & (data0['Recinto'].isna())]
@@ -131,20 +151,26 @@ if 'Proceso' in data0_incomplete.columns:
     data0_incomplete.drop(columns=['Proceso'], inplace=True)
 
 # Tercer mapeo: Asignar Proceso utilizando Base_Ceco_2.csv
-data0_incomplete = data0_incomplete.merge(base_ceco_data[['Ceco', 'Proceso']], how='left', left_on='Centro de coste', right_on='Ceco')
-if 'Proceso_y' in data0_incomplete.columns:  # Verificar si 'Proceso_y' existe después del merge
-    data0_incomplete['Proceso'] = data0_incomplete['Proceso_y']
-    data0_incomplete.drop(columns=['Proceso_y', 'Ceco'], inplace=True)
+if 'Centro de coste' in data0_incomplete.columns:
+    data0_incomplete = data0_incomplete.merge(base_ceco_data[['Ceco', 'Proceso']], how='left', left_on='Centro de coste', right_on='Ceco')
+    if 'Proceso_y' in data0_incomplete.columns:  # Verificar si 'Proceso_y' existe después del merge
+        data0_incomplete['Proceso'] = data0_incomplete['Proceso_y']
+        data0_incomplete.drop(columns=['Proceso_y', 'Ceco'], inplace=True)
+else:
+    st.error("No se encontraron las columnas necesarias para el cuarto mapeo")
 
 # Verificar que la columna 'Recinto' no existe antes del quinto mapeo
 if 'Recinto' in data0_incomplete.columns:
     data0_incomplete.drop(columns=['Recinto'], inplace=True)
 
 # Asignar Recinto utilizando Base_Ceco_2.csv
-data0_incomplete = data0_incomplete.merge(base_ceco_data[['Ceco', 'Recinto']], how='left', left_on='Centro de coste', right_on='Ceco')
-if 'Recinto_y' in data0_incomplete.columns:  # Verificar si 'Recinto_y' existe después del merge
-    data0_incomplete['Recinto'] = data0_incomplete['Recinto_y']
-    data0_incomplete.drop(columns=['Recinto_y', 'Ceco'], inplace=True)
+if 'Centro de coste' in data0_incomplete.columns:
+    data0_incomplete = data0_incomplete.merge(base_ceco_data[['Ceco', 'Recinto']], how='left', left_on='Centro de coste', right_on='Ceco')
+    if 'Recinto_y' in data0_incomplete.columns:  # Verificar si 'Recinto_y' existe después del merge
+        data0_incomplete['Recinto'] = data0_incomplete['Recinto_y']
+        data0_incomplete.drop(columns=['Recinto_y', 'Ceco'], inplace=True)
+else:
+    st.error("No se encontraron las columnas necesarias para el quinto mapeo")
 
 # Unir los datos completos e incompletos
 data0.update(data0_incomplete)
