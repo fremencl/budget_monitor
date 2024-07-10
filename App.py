@@ -166,7 +166,7 @@ if isinstance(data0, pd.DataFrame):
     data0['Período'] = pd.to_numeric(data0['Período'], errors='coerce')
     
     # Ejecutar `eliminar_pares_opuestos`
-    data0 = eliminar_pares_opuestos(data0)
+    data0, removed_data = eliminar_pares_opuestos(data0)  # Capturar ambos DataFrames
     
     # Convertir 'Período' de vuelta a cadena si es necesario
     #data0['Período'] = data0['Período'].astype(str)
