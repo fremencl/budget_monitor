@@ -117,7 +117,7 @@ if 'Orden partner' in data0.columns and 'Orden' in orders_data.columns:
     # Verificar la existencia de la columna 'Utec' después del merge
     if 'Utec' in data0.columns:
         data0['Utec'] = data0['Utec']
-        data0.drop(columns=['Orden'], inplace=True)  # Eliminar columna innecesaria
+        # data0.drop(columns=['Orden'], inplace=True)  # Eliminar columna innecesaria
     else:
         st.error("No se encontraron las columnas necesarias para el primer mapeo ('Utec')")
 else:
