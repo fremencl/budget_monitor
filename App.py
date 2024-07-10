@@ -124,8 +124,8 @@ else:
     st.error("No se encontraron las columnas necesarias para el primer mapeo")
 
 # Verificar que la columna 'Proceso' no existe antes del segundo mapeo
-if 'Proceso' in data0.columns:
-    data0.drop(columns=['Proceso'], inplace=True)
+#if 'Proceso' in data0.columns:
+    #data0.drop(columns=['Proceso'], inplace=True)
 
 # Segundo mapeo: Asignar Proceso utilizando Base_UTEC_BudgetVersion.csv
 if 'Utec' in data0.columns:
