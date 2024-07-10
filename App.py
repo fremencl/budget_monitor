@@ -98,15 +98,15 @@ def convertir_a_csv(df):
     return buffer.getvalue()
 
 # Generar el enlace de descarga para las filas eliminadas
-# csv_removed_data = convertir_a_csv(removed_data)
+csv_removed_data = convertir_a_csv(removed_data)
 
 # Agregar un botón de descarga en la aplicación
-#st.download_button(
-#    label="Descargar Filas Eliminadas",
-#    data=csv_removed_data,
-#    file_name='filas_eliminadas.csv',
-#    mime='text/csv',
-#)
+st.download_button(
+    label="Descargar Filas Eliminadas",
+    data=csv_removed_data,
+    file_name='filas_eliminadas.csv',
+    mime='text/csv',
+)
 
 # Filtro lateral para seleccionar Sociedad
 with st.sidebar:
