@@ -94,10 +94,6 @@ assert 'Ceco' in base_ceco_data.columns, "La columna 'Ceco' no está presente en
 assert 'Proceso' in base_ceco_data.columns, "La columna 'Proceso' no está presente en base_ceco_data"
 assert 'Recinto' in base_ceco_data.columns, "La columna 'Recinto' no está presente en base_ceco_data"
 
-# Procesamiento de data0
-data0 = eliminar_filas_grupo_ceco(data0)
-data0, removed_data = eliminar_pares_opuestos(data0)
-
 # Asegurarse de que 'Ejercicio' y 'Período' son de tipo string
 data0['Ejercicio'] = data0['Ejercicio'].astype(str)
 data0['Período'] = data0['Período'].astype(str)
@@ -167,6 +163,10 @@ if 'Utec' in data0.columns:
 else:
     st.error("No se encontraron las columnas necesarias para el tercer mapeo")
     
+# Procesamiento de data0
+data0 = eliminar_filas_grupo_ceco(data0)
+data0, removed_data = eliminar_pares_opuestos(data0)
+
 # Filtrar filas sin Proceso y Recinto completos
 data0_incomplete = data0[(data0['Proceso'].isna()) & (data0['Recinto'].isna())].copy()  # Crear una copia explícita
 
