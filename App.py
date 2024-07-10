@@ -155,7 +155,7 @@ if isinstance(data0, pd.DataFrame):
     data0 = eliminar_pares_opuestos(data0)
     
     # Convertir 'Período' de vuelta a cadena si es necesario
-    data0['Período'] = data0['Período'].astype(str)
+    #data0['Período'] = data0['Período'].astype(str)
 else:
     st.error("data0 no es un DataFrame")
 
