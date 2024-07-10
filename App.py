@@ -146,9 +146,21 @@ if 'Utec' in data0.columns:
 else:
     st.error("No se encontraron las columnas necesarias para el tercer mapeo")
     
+# Asegurarse de que data0 es un DataFrame
+if isinstance(data0, pd.DataFrame):
+    # Convertir temporalmente 'Período' a tipo numérico para eliminar pares opuestos
+    data0['Período'] = pd.to_numeric(data0['Período'], errors='coerce')
+    
+    # Ejecutar `eliminar_pares_opuestos`
+    data0 = eliminar_pares_opuestos(data0)
+    
+    # Convertir 'Período' de vuelta a cadena si es necesario
+    data0['Período'] = data0['Período'].astype(str)
+else:
+    st.error("data0 no es un DataFrame")
+
 # Procesamiento de data0
 data0 = eliminar_filas_grupo_ceco(data0)
-data0 = eliminar_pares_opuestos(data0)
 
 # Filtrar filas sin Proceso y Recinto completos
 data0_incomplete = data0[(data0['Proceso'].isna()) & (data0['Recinto'].isna())].copy()  # Crear una copia explícita
