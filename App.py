@@ -174,7 +174,10 @@ else:
     st.error("data0 no es un DataFrame")
 
 # Procesamiento de data0
-data0 = eliminar_filas_grupo_ceco(data0)
+if isinstance(data0, pd.DataFrame):
+    data0 = eliminar_filas_grupo_ceco(data0)
+else:
+    st.error("data0 no es un DataFrame antes de eliminar filas con valores específicos en 'Grupo_Ceco'")
 
 # Filtrar filas sin Proceso y Recinto completos
 data0_incomplete = data0[(data0['Proceso'].isna()) & (data0['Recinto'].isna())].copy()  # Crear una copia explícita
