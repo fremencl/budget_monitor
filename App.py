@@ -10,9 +10,7 @@ st.markdown("<h1 style='text-align: center; color: black; font-size: 24px;'>MONI
 # Definimos las URLs de los archivos de referencia
 DATA0_URL = 'https://streamlitmaps.s3.amazonaws.com/Data_0524.csv'
 BUDGET_URL = 'https://streamlitmaps.s3.amazonaws.com/Base_Presupuesto.csv'
-ORDERS_URL = 'https://streamlitmaps.s3.amazonaws.com/Base_Ordenes_3.csv'
-BASE_UTEC_URL = 'https://streamlitmaps.s3.amazonaws.com/Base_UTEC_BudgetVersion.csv'
-BASE_CECO_URL = 'https://streamlitmaps.s3.amazonaws.com/Base_Ceco_2.csv'
+ORDERS_URL = 'https://streamlitmaps.s3.amazonaws.com/Base_Ordenes.csv'
 
 # Función para cargar el archivo de referencia
 @st.cache_data
@@ -81,18 +79,6 @@ def eliminar_pares_opuestos(data):
 data0 = load_data(DATA0_URL)
 budget_data = load_data(BUDGET_URL)
 orders_data = load_data(ORDERS_URL)
-base_utec_data = load_data(BASE_UTEC_URL)
-base_ceco_data = load_data(BASE_CECO_URL)
-
-# Verificar que las columnas necesarias están presentes en los DataFrames cargados
-assert 'Orden' in orders_data.columns, "La columna 'Orden' no está presente en orders_data"
-assert 'Utec' in orders_data.columns, "La columna 'Utec' no está presente en orders_data"
-assert 'Utec' in base_utec_data.columns, "La columna 'Utec' no está presente en base_utec_data"
-assert 'Proceso' in base_utec_data.columns, "La columna 'Proceso' no está presente en base_utec_data"
-assert 'Recinto' in base_utec_data.columns, "La columna 'Recinto' no está presente en base_utec_data"
-assert 'Ceco' in base_ceco_data.columns, "La columna 'Ceco' no está presente en base_ceco_data"
-assert 'Proceso' in base_ceco_data.columns, "La columna 'Proceso' no está presente en base_ceco_data"
-assert 'Recinto' in base_ceco_data.columns, "La columna 'Recinto' no está presente en base_ceco_data"
 
 # Procesamiento de data0
 data0 = eliminar_filas_grupo_ceco(data0)
@@ -104,128 +90,77 @@ data0['Período'] = data0['Período'].astype(str)
 budget_data['Año'] = budget_data['Año'].astype(str)
 budget_data['Mes'] = budget_data['Mes'].astype(str)
 
-# Agregar nuevas columnas a data0
-data0['Utec'] = None
-data0['Proceso'] = None
-data0['Recinto'] = None
+# Función para convertir DataFrame a CSV
+def convertir_a_csv(df):
+    buffer = io.StringIO()
+    df.to_csv(buffer, index=False, sep=';')
+    buffer.seek(0)
+    return buffer.getvalue()
 
-st.write("Columnas en data0:", data0.columns)
-st.write("Columnas en orders_data:", orders_data.columns)
-st.write("Columnas en base_utec_data:", base_utec_data.columns)
+# Generar el enlace de descarga para las filas eliminadas
+# csv_removed_data = convertir_a_csv(removed_data)
 
-# Primer mapeo: Asignar Utec utilizando ORDERS_URL
-if 'Orden partner' in data0.columns and 'Orden' in orders_data.columns:
-    data0 = data0.merge(orders_data[['Orden', 'Utec']], how='left', left_on='Orden partner', right_on='Orden', suffixes=('_original', '_merged'))
-    st.write("Columnas en data0 después del primer merge:", data0.columns)
-    if 'Utec_merged' in data0.columns:
-        data0['Utec'] = data0['Utec_merged']
-        data0.drop(columns=['Utec_original', 'Utec_merged'], inplace=True)
-    else:
-        st.error("No se encontraron las columnas necesarias para el primer mapeo ('Utec')")
-else:
-    st.error("No se encontraron las columnas necesarias para el primer mapeo")
+# Agregar un botón de descarga en la aplicación
+#st.download_button(
+#    label="Descargar Filas Eliminadas",
+#    data=csv_removed_data,
+#    file_name='filas_eliminadas.csv',
+#    mime='text/csv',
+#)
 
-# Segundo mapeo: Asignar Proceso utilizando Base_UTEC_BudgetVersion.csv
-if 'Utec' in data0.columns:
-    data0 = data0.merge(base_utec_data[['Utec', 'Proceso']], how='left', on='Utec', suffixes=('_original', '_merged'))
-    st.write("Columnas en data0 después del segundo merge:", data0.columns)
-    if 'Proceso_merged' in data0.columns:
-        data0['Proceso'] = data0['Proceso_merged']
-        data0.drop(columns=['Proceso_original', 'Proceso_merged'], inplace=True)
-    else:
-        st.error("No se encontraron las columnas necesarias para el segundo mapeo")
-else:
-    st.error("No se encontraron las columnas necesarias para el segundo mapeo")
-
-# Asignar Recinto utilizando Base_UTEC_BudgetVersion.csv
-if 'Utec' in data0.columns:
-    data0 = data0.merge(base_utec_data[['Utec', 'Recinto']], how='left', on='Utec', suffixes=('_original', '_merged'))
-    st.write("Columnas en data0 después del tercer merge:", data0.columns)
-    if 'Recinto_merged' in data0.columns:
-        data0['Recinto'] = data0['Recinto_merged']
-        data0.drop(columns=['Recinto_original', 'Recinto_merged'], inplace=True)
-    else:
-        st.error("No se encontraron las columnas necesarias para el tercer mapeo")
-else:
-    st.error("No se encontraron las columnas necesarias para el tercer mapeo")
-    
-# Filtrar filas sin Proceso y Recinto completos
-data0_incomplete = data0[(data0['Proceso'].isna()) & (data0['Recinto'].isna())].copy()  # Crear una copia explícita
-
-# Verificar que la columna 'Proceso' no existe antes del cuarto mapeo
-if 'Proceso' in data0_incomplete.columns:
-    data0_incomplete.drop(columns=['Proceso'], inplace=True)
-
-# Tercer mapeo: Asignar Proceso utilizando Base_Ceco_2.csv
-if 'Centro de coste' in data0_incomplete.columns:
-    data0_incomplete = data0_incomplete.merge(base_ceco_data[['Ceco', 'Proceso']], how='left', left_on='Centro de coste', right_on='Ceco')
-    if 'Proceso_y' in data0_incomplete.columns:  # Verificar si 'Proceso_y' existe después del merge
-        data0_incomplete['Proceso'] = data0_incomplete['Proceso_y']
-        data0_incomplete.drop(columns=['Proceso_y', 'Ceco'], inplace=True)
-else:
-    st.error("No se encontraron las columnas necesarias para el cuarto mapeo")
-
-# Verificar que la columna 'Recinto' no existe antes del quinto mapeo
-if 'Recinto' in data0_incomplete.columns:
-    data0_incomplete.drop(columns=['Recinto'], inplace=True)
-
-# Asignar Recinto utilizando Base_Ceco_2.csv
-if 'Centro de coste' in data0_incomplete.columns:
-    data0_incomplete = data0_incomplete.merge(base_ceco_data[['Ceco', 'Recinto']], how='left', left_on='Centro de coste', right_on='Ceco')
-    if 'Recinto_y' in data0_incomplete.columns:  # Verificar si 'Recinto_y' existe después del merge
-        data0_incomplete['Recinto'] = data0_incomplete['Recinto_y']
-        data0_incomplete.drop(columns=['Recinto_y', 'Ceco'], inplace=True)
-else:
-    st.error("No se encontraron las columnas necesarias para el quinto mapeo")
-
-# Unir los datos completos e incompletos
-data0.update(data0_incomplete)
-
-# Convertir todos los valores en la columna 'Proceso' a cadenas para evitar el error de ordenación
-data0['Proceso'] = data0['Proceso'].astype(str)
-data0['Recinto'] = data0['Recinto'].astype(str)
-
-# Filtros Laterales
+# Filtro lateral para seleccionar Sociedad
 with st.sidebar:
     st.header("Parámetros")
-    opcion_año = st.selectbox('Año', ['2024'] + sorted(data0['Ejercicio'].unique()))
-    
-    opciones_proceso = ['Todos'] + sorted(data0['Proceso'].unique())
-    opcion_proceso = st.selectbox('Proceso', opciones_proceso)
-    
+    opciones_año = ['2024'] + sorted(data0['Ejercicio'].unique())
+    opcion_año = st.selectbox('Año', opciones_año)
+
+    opciones_area = ['Todos'] + sorted(data0['Area'].unique())
+    opcion_area = st.selectbox('Area', opciones_area)
+
     opciones_fam_cuenta = ['Todos'] + sorted(data0['Familia_Cuenta'].unique())
     opcion_fam_cuenta = st.selectbox('Familia_Cuenta', opciones_fam_cuenta)
-    
+
     opciones_clase_coste = ['Todos'] + sorted(data0['Clase de coste'].unique())
     opcion_clase_coste = st.selectbox('Clase de coste', opciones_clase_coste)
-    
-    opciones_recinto = ['Todos'] + sorted(data0['Recinto'].unique())
-    opcion_recinto = st.selectbox('Recinto', opciones_recinto)
 
-# Aplicar filtros seleccionados a los DataFrames
-def aplicar_filtros(data, opcion_año, opcion_proceso, opcion_fam_cuenta, opcion_clase_coste, opcion_recinto, col_año):
+    opciones_grupo_ceco = ['Todos'] + sorted(data0['Grupo_Ceco'].unique())
+    opcion_grupo_ceco = st.selectbox('Grupo_Ceco', opciones_grupo_ceco)
+
+# Aplicar los filtros seleccionados a ambos DataFrames
+def aplicar_filtros(data, opcion_año, opcion_area, opcion_fam_cuenta, opcion_clase_coste, opcion_grupo_ceco, col_año):
     if opcion_año != 'Todos':
         data = data[data[col_año] == opcion_año]
-    if opcion_proceso != 'Todos':
-        data = data[data['Proceso'] == opcion_proceso]
+    if opcion_area != 'Todos':
+        data = data[data['Area'] == opcion_area]
     if opcion_fam_cuenta != 'Todos':
         data = data[data['Familia_Cuenta'] == opcion_fam_cuenta]
     if opcion_clase_coste != 'Todos':
         data = data[data['Clase de coste'] == opcion_clase_coste]
-    if opcion_recinto != 'Todos':
-        data = data[data['Recinto'] == opcion_recinto]
+    if opcion_grupo_ceco != 'Todos':
+        data = data[data['Grupo_Ceco'] == opcion_grupo_ceco]
     return data
 
-data0 = aplicar_filtros(data0, opcion_año, opcion_proceso, opcion_fam_cuenta, opcion_clase_coste, opcion_recinto, 'Ejercicio')
-budget_data = aplicar_filtros(budget_data, opcion_año, opcion_proceso, opcion_fam_cuenta, opcion_clase_coste, opcion_recinto, 'Año')
+# Filtrar los datos
+data0 = aplicar_filtros(data0, opcion_año, opcion_area, opcion_fam_cuenta, opcion_clase_coste, opcion_grupo_ceco, 'Ejercicio')
+budget_data = aplicar_filtros(budget_data, opcion_año, opcion_area, opcion_fam_cuenta, opcion_clase_coste, opcion_grupo_ceco, 'Año')
+
+# Comentar las tablas de datos filtrados
+# st.write("Datos filtrados de gasto real:", data0.head())
+# st.write("Datos filtrados de presupuesto:", budget_data.head())
 
 # Calcular las sumas por año y mes para Gasto Real y Gasto Presupuestado
 gasto_real = data0.groupby(['Ejercicio', 'Período'])['Valor/mon.inf.'].sum().reset_index()
 gasto_real['Valor/mon.inf.'] = (gasto_real['Valor/mon.inf.'] / 1000000).round(1)  # Convertir a millones con un decimal
 gasto_real = gasto_real.rename(columns={'Ejercicio': 'Año', 'Período': 'Mes'})
 
+# Comentar tabla de gastos agrupados
+# st.write("Gasto real agrupado y convertido:", gasto_real.head())
+
 gasto_presupuestado = budget_data.groupby(['Año', 'Mes'])['Presupuesto'].sum().reset_index()
 gasto_presupuestado['Presupuesto'] = gasto_presupuestado['Presupuesto'].round(1)
+
+# Comentar tabla de gastos presupuestados agrupados
+# st.write("Gasto presupuestado agrupado:", gasto_presupuestado.head())
 
 # Asegurarse de que las columnas son del mismo tipo
 gasto_real['Año'] = gasto_real['Año'].astype(str)
@@ -236,10 +171,16 @@ gasto_presupuestado['Mes'] = gasto_presupuestado['Mes'].astype(int)  # Convertir
 # Crear la tabla combinada
 combined_data = pd.merge(gasto_real, gasto_presupuestado, on=['Año', 'Mes'], how='outer').fillna(0)
 
+# Comentar la tabla de datos combinados
+# st.write("Datos combinados:", combined_data.head())
+
 combined_data['Diferencia'] = combined_data['Valor/mon.inf.'] - combined_data['Presupuesto']
 
 # Ordenar las columnas de manera ascendente
 combined_data = combined_data.sort_values(by=['Año', 'Mes'])
+
+# Mostrar las tablas en la aplicación Streamlit
+#st.markdown("#### ANÁLISIS DE GASTO Y PRESUPUESTO")
 
 # Tabla combinada
 st.markdown("#### Tabla de Gasto Real vs Presupuestado")
