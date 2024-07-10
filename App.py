@@ -113,9 +113,16 @@ data0['Recinto'] = None
 if 'Orden partner' in data0.columns and 'Orden' in orders_data.columns:
     if 'Utec' in data0.columns:
         data0.drop(columns=['Utec'], inplace=True)  # Eliminar columna Utec antes del merge
+    
+    # Realizar el merge con la tabla orders_data para asignar la columna Utec
     data0 = data0.merge(orders_data[['Orden', 'Utec']], how='left', left_on='Orden partner', right_on='Orden')
-    data0['Utec'] = data0['Utec_y']
-    data0.drop(columns=['Utec_y', 'Orden'], inplace=True)
+    
+    # Verificar la existencia de la columna 'Utec_y' después del merge
+    if 'Utec_y' in data0.columns:
+        data0['Utec'] = data0['Utec_y']
+        data0.drop(columns=['Utec_y', 'Orden'], inplace=True)  # Eliminar columnas innecesarias
+    else:
+        st.error("No se encontraron las columnas necesarias para el primer mapeo ('Utec_y')")
 else:
     st.error("No se encontraron las columnas necesarias para el primer mapeo")
 
