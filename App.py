@@ -109,6 +109,10 @@ data0['Utec'] = None
 data0['Proceso'] = None
 data0['Recinto'] = None
 
+st.write("Columnas en data0:", data0.columns)
+st.write("Columnas en orders_data:", orders_data.columns)
+st.write("Columnas en base_utec_data:", base_utec_data.columns)
+
 # Primer mapeo: Asignar Utec utilizando ORDERS_URL
 if 'Orden partner' in data0.columns and 'Orden' in orders_data.columns:
     # Realizar el merge con la tabla orders_data para asignar la columna Utec
