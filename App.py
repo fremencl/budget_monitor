@@ -213,8 +213,8 @@ else:
 data0.update(data0_incomplete)
 
 # Convertir todos los valores en la columna 'Proceso' a cadenas para evitar el error de ordenación
-data0['Proceso'] = data0['Proceso'].astype(str)
-data0['Recinto'] = data0['Recinto'].astype(str)
+#data0['Proceso'] = data0['Proceso'].astype(str)
+#data0['Recinto'] = data0['Recinto'].astype(str)
 
 # Filtros Laterales
 with st.sidebar:
