@@ -84,6 +84,12 @@ orders_data = load_data(ORDERS_URL)
 base_utec_data = load_data(BASE_UTEC_URL)
 base_ceco_data = load_data(BASE_CECO_URL)
 
+# Verificar que data0 es un DataFrame justo después de cargarlo
+if not isinstance(data0, pd.DataFrame):
+    st.error("data0 no es un DataFrame después de cargar los datos")
+else:
+    st.write("data0 se cargó correctamente como DataFrame")
+
 # Verificar que las columnas necesarias están presentes en los DataFrames cargados
 assert 'Orden' in orders_data.columns, "La columna 'Orden' no está presente en orders_data"
 assert 'Utec' in orders_data.columns, "La columna 'Utec' no está presente en orders_data"
@@ -124,6 +130,10 @@ if 'Orden partner' in data0.columns and 'Orden' in orders_data.columns:
 else:
     st.error("No se encontraron las columnas necesarias para el primer mapeo")
 
+# Verificar si data0 es un DataFrame
+if not isinstance(data0, pd.DataFrame):
+    st.error("data0 no es un DataFrame después del primer mapeo")
+
 # Segundo mapeo: Asignar Proceso utilizando Base_UTEC_BudgetVersion.csv
 if 'Utec' in data0.columns:
     data0 = data0.merge(base_utec_data[['Utec', 'Proceso']], how='left', on='Utec', suffixes=('_original', '_merged'))
@@ -134,6 +144,10 @@ if 'Utec' in data0.columns:
         st.error("No se encontraron las columnas necesarias para el segundo mapeo")
 else:
     st.error("No se encontraron las columnas necesarias para el segundo mapeo")
+
+# Verificar si data0 es un DataFrame
+if not isinstance(data0, pd.DataFrame):
+    st.error("data0 no es un DataFrame después del primer mapeo")
 
 # Asignar Recinto utilizando Base_UTEC_BudgetVersion.csv
 if 'Utec' in data0.columns:
@@ -168,6 +182,10 @@ data0_incomplete = data0[(data0['Proceso'].isna()) & (data0['Recinto'].isna())].
 # Verificar que la columna 'Proceso' no existe antes del cuarto mapeo
 if 'Proceso' in data0_incomplete.columns:
     data0_incomplete.drop(columns=['Proceso'], inplace=True)
+
+# Verificar si data0 es un DataFrame
+if not isinstance(data0, pd.DataFrame):
+    st.error("data0 no es un DataFrame después del primer mapeo")
 
 # Tercer mapeo: Asignar Proceso utilizando Base_Ceco_2.csv
 if 'Centro de coste' in data0_incomplete.columns:
