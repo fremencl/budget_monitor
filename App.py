@@ -115,41 +115,36 @@ st.write("Columnas en base_utec_data:", base_utec_data.columns)
 
 # Primer mapeo: Asignar Utec utilizando ORDERS_URL
 if 'Orden partner' in data0.columns and 'Orden' in orders_data.columns:
-    # Realizar el merge con la tabla orders_data para asignar la columna Utec
     data0 = data0.merge(orders_data[['Orden', 'Utec']], how='left', left_on='Orden partner', right_on='Orden')
-    
-    # Verificar la existencia de la columna 'Utec' después del merge
+    st.write("Columnas en data0 después del primer merge:", data0.columns)
     if 'Utec' in data0.columns:
         data0['Utec'] = data0['Utec']
-        # data0.drop(columns=['Orden'], inplace=True)  # Eliminar columna innecesaria
     else:
         st.error("No se encontraron las columnas necesarias para el primer mapeo ('Utec')")
 else:
     st.error("No se encontraron las columnas necesarias para el primer mapeo")
 
-# Verificar que la columna 'Proceso' no existe antes del segundo mapeo
-#if 'Proceso' in data0.columns:
-    #data0.drop(columns=['Proceso'], inplace=True)
-
 # Segundo mapeo: Asignar Proceso utilizando Base_UTEC_BudgetVersion.csv
 if 'Utec' in data0.columns:
     data0 = data0.merge(base_utec_data[['Utec', 'Proceso']], how='left', on='Utec')
-    if 'Proceso_y' in data0.columns:  # Verificar si 'Proceso_y' existe después del merge
+    st.write("Columnas en data0 después del segundo merge:", data0.columns)
+    if 'Proceso_y' in data0.columns:
         data0['Proceso'] = data0['Proceso_y']
         data0.drop(columns=['Proceso_y'], inplace=True)
+    else:
+        st.error("No se encontraron las columnas necesarias para el segundo mapeo")
 else:
     st.error("No se encontraron las columnas necesarias para el segundo mapeo")
-
-# Verificar que la columna 'Recinto' no existe antes del tercer mapeo
-#if 'Recinto' in data0.columns:
-    #data0.drop(columns=['Recinto'], inplace=True)
 
 # Asignar Recinto utilizando Base_UTEC_BudgetVersion.csv
 if 'Utec' in data0.columns:
     data0 = data0.merge(base_utec_data[['Utec', 'Recinto']], how='left', on='Utec')
-    if 'Recinto_y' in data0.columns:  # Verificar si 'Recinto_y' existe después del merge
+    st.write("Columnas en data0 después del tercer merge:", data0.columns)
+    if 'Recinto_y' in data0.columns:
         data0['Recinto'] = data0['Recinto_y']
         data0.drop(columns=['Recinto_y'], inplace=True)
+    else:
+        st.error("No se encontraron las columnas necesarias para el tercer mapeo")
 else:
     st.error("No se encontraron las columnas necesarias para el tercer mapeo")
 
