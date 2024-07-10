@@ -108,7 +108,6 @@ data0['Recinto'] = None
 # Primer mapeo: Asignar Utec utilizando ORDERS_URL
 if 'Orden partner' in data0.columns and 'Orden' in orders_data.columns:
     data0 = data0.merge(orders_data[['Orden', 'Utec']], how='left', left_on='Orden partner', right_on='Orden', suffixes=('_original', '_merged'))
-    st.write("Columnas en data0 después del primer merge:", data0.columns)
     if 'Utec_merged' in data0.columns:
         data0['Utec'] = data0['Utec_merged']
         data0.drop(columns=['Utec_original', 'Utec_merged'], inplace=True)
@@ -120,7 +119,6 @@ else:
 # Segundo mapeo: Asignar Proceso utilizando Base_UTEC_BudgetVersion.csv
 if 'Utec' in data0.columns:
     data0 = data0.merge(base_utec_data[['Utec', 'Proceso']], how='left', on='Utec', suffixes=('_original', '_merged'))
-    st.write("Columnas en data0 después del segundo merge:", data0.columns)
     if 'Proceso_merged' in data0.columns:
         data0['Proceso'] = data0['Proceso_merged']
         data0.drop(columns=['Proceso_original', 'Proceso_merged'], inplace=True)
@@ -132,7 +130,6 @@ else:
 # Asignar Recinto utilizando Base_UTEC_BudgetVersion.csv
 if 'Utec' in data0.columns:
     data0 = data0.merge(base_utec_data[['Utec', 'Recinto']], how='left', on='Utec', suffixes=('_original', '_merged'))
-    st.write("Columnas en data0 después del tercer merge:", data0.columns)
     if 'Recinto_merged' in data0.columns:
         data0['Recinto'] = data0['Recinto_merged']
         data0.drop(columns=['Recinto_original', 'Recinto_merged'], inplace=True)
