@@ -105,6 +105,12 @@ data0['Utec'] = None
 data0['Proceso'] = None
 data0['Recinto'] = None
 
+# Convertir la columna 'Valor/mon.inf.' a tipo numérico
+data0['Valor/mon.inf.'] = pd.to_numeric(data0['Valor/mon.inf.'], errors='coerce')
+
+# Eliminar filas con NaN en 'Valor/mon.inf.' si es necesario
+data0 = data0.dropna(subset=['Valor/mon.inf.'])
+
 # Primer mapeo: Asignar Utec utilizando ORDERS_URL
 if 'Orden partner' in data0.columns and 'Orden' in orders_data.columns:
     data0 = data0.merge(orders_data[['Orden', 'Utec']], how='left', left_on='Orden partner', right_on='Orden', suffixes=('_original', '_merged'))
