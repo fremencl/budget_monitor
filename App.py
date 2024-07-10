@@ -140,7 +140,7 @@ else:
     
 # Procesamiento de data0
 data0 = eliminar_filas_grupo_ceco(data0)
-data0, removed_data = eliminar_pares_opuestos(data0)
+data0 = eliminar_pares_opuestos(data0)
 
 # Filtrar filas sin Proceso y Recinto completos
 data0_incomplete = data0[(data0['Proceso'].isna()) & (data0['Recinto'].isna())].copy()  # Crear una copia explícita
