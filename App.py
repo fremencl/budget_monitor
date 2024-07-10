@@ -109,6 +109,13 @@ data0['Utec'] = None
 data0['Proceso'] = None
 data0['Recinto'] = None
 
+# Función para convertir DataFrame a CSV
+def convertir_a_csv(df):
+    buffer = io.StringIO()
+    df.to_csv(buffer, index=False, sep=';')
+    buffer.seek(0)
+    return buffer.getvalue()
+
 # Generar el enlace de descarga para las filas eliminadas
 csv_removed_data = convertir_a_csv(removed_data)
 
