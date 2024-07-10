@@ -77,6 +77,13 @@ def eliminar_pares_opuestos(data):
     
     return filtered_df, removed_df
 
+# Función para convertir DataFrame a CSV
+def convertir_a_csv(df):
+    buffer = io.StringIO()
+    df.to_csv(buffer, index=False, sep=';')
+    buffer.seek(0)
+    return buffer.getvalue()
+
 # Cargar los datos
 data0 = load_data(DATA0_URL)
 budget_data = load_data(BUDGET_URL)
@@ -178,6 +185,17 @@ if isinstance(data0, pd.DataFrame):
     data0 = eliminar_filas_grupo_ceco(data0)
 else:
     st.error("data0 no es un DataFrame antes de eliminar filas con valores específicos en 'Grupo_Ceco'")
+
+# Generar el enlace de descarga para las filas eliminadas
+csv_removed_data = convertir_a_csv(removed_data)
+
+# Agregar un botón de descarga en la aplicación
+st.download_button(
+    label="Descargar Filas Eliminadas",
+    data=csv_removed_data,
+    file_name='filas_eliminadas.csv',
+    mime='text/csv',
+)
 
 # Filtrar filas sin Proceso y Recinto completos
 data0_incomplete = data0[(data0['Proceso'].isna()) & (data0['Recinto'].isna())].copy()  # Crear una copia explícita
