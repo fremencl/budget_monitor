@@ -105,28 +105,6 @@ data0['Utec'] = None
 data0['Proceso'] = None
 data0['Recinto'] = None
 
-# Función para convertir DataFrame a CSV
-def convertir_a_csv(df):
-    buffer = io.StringIO()
-    df.to_csv(buffer, index=False, sep=';')
-    buffer.seek(0)
-    return buffer.getvalue()
-
-# Generar el enlace de descarga para las filas eliminadas
-csv_removed_data = convertir_a_csv(removed_data)
-
-# Agregar un botón de descarga en la aplicación
-st.download_button(
-    label="Descargar Filas Eliminadas",
-    data=csv_removed_data,
-    file_name='filas_eliminadas.csv',
-    mime='text/csv',
-)
-
-st.write("Columnas en data0:", data0.columns)
-st.write("Columnas en orders_data:", orders_data.columns)
-st.write("Columnas en base_utec_data:", base_utec_data.columns)
-
 # Primer mapeo: Asignar Utec utilizando ORDERS_URL
 if 'Orden partner' in data0.columns and 'Orden' in orders_data.columns:
     data0 = data0.merge(orders_data[['Orden', 'Utec']], how='left', left_on='Orden partner', right_on='Orden', suffixes=('_original', '_merged'))
