@@ -137,8 +137,8 @@ else:
     st.error("No se encontraron las columnas necesarias para el segundo mapeo")
 
 # Verificar que la columna 'Recinto' no existe antes del tercer mapeo
-if 'Recinto' in data0.columns:
-    data0.drop(columns=['Recinto'], inplace=True)
+#if 'Recinto' in data0.columns:
+    #data0.drop(columns=['Recinto'], inplace=True)
 
 # Asignar Recinto utilizando Base_UTEC_BudgetVersion.csv
 if 'Utec' in data0.columns:
