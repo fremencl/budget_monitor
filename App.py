@@ -18,13 +18,10 @@ BASE_CECO_URL = 'https://streamlitmaps.s3.amazonaws.com/Base_Ceco_2.csv'
 @st.cache_data
 def load_data(url):
     data = pd.read_csv(url, encoding='ISO-8859-1', sep=';')
-    st.write(f"Datos cargados desde {url}:")
-    st.write(data.head())
-    
+        
     if 'Valor/mon.inf.' in data.columns:
         data['Valor/mon.inf.'] = pd.to_numeric(data['Valor/mon.inf.'].str.replace(',', ''), errors='coerce').fillna(0)
-        st.write("Después de convertir 'Valor/mon.inf.' a numérico:")
-        st.write(data.head())
+        
     return data
 
 # Función para eliminar filas con valores específicos en "Grupo_Ceco"
@@ -122,10 +119,14 @@ budget_data['Mes'] = budget_data['Mes'].astype(str)
 data0['Utec'] = None
 data0['Proceso'] = None
 data0['Recinto'] = None
+st.write("Después de agregar columnas Utec, Proceso y Recinto:")
+st.write(data0.head())
 
 # Convertir la columna 'Período' y 'Valor/mon.inf.'a tipo numérico
 data0['Período'] = pd.to_numeric(data0['Período'], errors='coerce')
 data0['Valor/mon.inf.'] = pd.to_numeric(data0['Valor/mon.inf.'], errors='coerce')
+st.write("Después de convertir 'Período' y 'Valor/mon.inf.' a numérico:")
+st.write(data0.head())
 
 # Eliminar filas con NaN en 'Período' y 'Valor/mon.inf.'si es necesario
 #data0 = data0.dropna(subset=['Período'])
