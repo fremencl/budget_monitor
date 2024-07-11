@@ -193,13 +193,13 @@ else:
     st.error("data0 no es un DataFrame antes de eliminar filas con valores específicos en 'Grupo_Ceco'")
 
 # Generar el enlace de descarga para las filas eliminadas
-csv_removed_data = convertir_a_csv(removed_data)
+csv_no_removed_data = convertir_a_csv(Data0)
 
 # Agregar un botón de descarga en la aplicación
 st.download_button(
-    label="Descargar Filas Eliminadas",
-    data=csv_removed_data,
-    file_name='filas_eliminadas.csv',
+    label="Descargar Filas NO Eliminadas",
+    data=csv_no_removed_data,
+    file_name='filas_no_eliminadas.csv',
     mime='text/csv',
 )
 
