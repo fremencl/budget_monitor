@@ -12,7 +12,7 @@ DATA0_URL = 'https://streamlitmaps.s3.amazonaws.com/Data_0524.csv'
 BUDGET_URL = 'https://streamlitmaps.s3.amazonaws.com/Base_Presupuesto.csv'
 ORDERS_URL = 'https://streamlitmaps.s3.amazonaws.com/Base_Ordenes_3.csv'
 BASE_UTEC_URL = 'https://streamlitmaps.s3.amazonaws.com/Base_UTEC_BudgetVersion.csv'
-BASE_CECO_URL = 'https://streamlitmaps.s3.amazonaws.com/Base_Ceco_2.csv'
+BASE_CECO_URL = 'https://streamlitmaps.s3.amazonaws.com/Base_Ceco_3.csv'
 
 # Función para cargar el archivo de referencia
 @st.cache_data
@@ -206,8 +206,8 @@ base_ceco_data['Proceso'] = base_ceco_data['Proceso'].astype(str)
     #data0_incomplete.drop(columns=['Proceso'], inplace=True)
 
 # Verificar si data0 es un DataFrame
-if not isinstance(data0, pd.DataFrame):
-    st.error("data0 no es un DataFrame después del primer mapeo")
+if not isinstance(data0_incomplete, pd.DataFrame):
+    st.error("data0_incomplete no es un DataFrame después del mapeo ceco")
 
 # Tercer mapeo: Asignar Proceso utilizando Base_Ceco_2.csv
 if 'Centro de coste' in data0_incomplete.columns:
