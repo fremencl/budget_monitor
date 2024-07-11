@@ -192,19 +192,19 @@ if isinstance(data0, pd.DataFrame):
 else:
     st.error("data0 no es un DataFrame antes de eliminar filas con valores específicos en 'Grupo_Ceco'")
 
+# Filtrar filas sin Proceso y Recinto completos
+data0_incomplete = data0[(data0['Proceso'].isna()) & (data0['Recinto'].isna())].copy()  # Crear una copia explícita
+
 # Generar el enlace de descarga para las filas eliminadas
-csv_no_removed_data = convertir_a_csv(data0)
+csv_filtrado_ceco_data = convertir_a_csv(data0_incomplete)
 
 # Agregar un botón de descarga en la aplicación
 st.download_button(
-    label="Descargar Filas NO Eliminadas",
-    data=csv_no_removed_data,
-    file_name='filas_no_eliminadas.csv',
+    label="Descargar Filas Filtradas Data",
+    data=csv_filtrado_ceco_data,
+    file_name='filas_filtrado_ceco_data.csv',
     mime='text/csv',
 )
-
-# Filtrar filas sin Proceso y Recinto completos
-data0_incomplete = data0[(data0['Proceso'].isna()) & (data0['Recinto'].isna())].copy()  # Crear una copia explícita
 
 # Verificar que la columna 'Proceso' no existe antes del cuarto mapeo
 if 'Proceso' in data0_incomplete.columns:
