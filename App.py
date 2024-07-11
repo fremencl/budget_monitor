@@ -195,17 +195,6 @@ else:
 # Filtrar filas sin Proceso y Recinto completos
 data0_incomplete = data0[(data0['Proceso'].isna()) & (data0['Recinto'].isna())].copy()  # Crear una copia explícita
 
-# Generar el enlace de descarga para las filas eliminadas
-csv_filtrado_ceco_data = convertir_a_csv(data0_incomplete)
-
-# Agregar un botón de descarga en la aplicación
-st.download_button(
-    label="Descargar Filas Filtradas Data",
-    data=csv_filtrado_ceco_data,
-    file_name='filas_filtrado_ceco_data.csv',
-    mime='text/csv',
-)
-
 # Verificar que la columna 'Proceso' no existe antes del cuarto mapeo
 if 'Proceso' in data0_incomplete.columns:
     data0_incomplete.drop(columns=['Proceso'], inplace=True)
@@ -242,6 +231,17 @@ data0.update(data0_incomplete)
 # Convertir todos los valores en la columna 'Proceso' a cadenas para evitar el error de ordenación
 data0['Proceso'] = data0['Proceso'].astype(str)
 data0['Recinto'] = data0['Recinto'].astype(str)
+
+# Generar el enlace de descarga para las filas eliminadas
+csv_con_mapeo_ceco_data = convertir_a_csv(data0)
+
+# Agregar un botón de descarga en la aplicación
+st.download_button(
+    label="Descargar Filas Filtradas Data",
+    data=csv_con_mapeo_ceco_data,
+    file_name='filas_con_mapeo_ceco_data.csv',
+    mime='text/csv',
+)
 
 # Filtros Laterales
 with st.sidebar:
