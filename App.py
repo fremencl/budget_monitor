@@ -218,6 +218,21 @@ if 'Centro de coste' in data0_incomplete.columns:
 else:
     st.error("No se encontraron las columnas necesarias para el cuarto mapeo")
 
+# Convertir todos los valores en la columna 'Proceso' a cadenas para evitar el error de ordenación
+#data0['Proceso'] = data0['Proceso'].astype(str)
+#data0['Recinto'] = data0['Recinto'].astype(str)
+
+# Generar el enlace de descarga para las filas eliminadas
+csv_proceso_incomplete_data = convertir_a_csv(data0.incomplete)
+
+# Agregar un botón de descarga en la aplicación
+st.download_button(
+    label="Descargar csv_proceso_incomplete_data",
+    data=csv_proceso_incomplete_data,
+    file_name='filas_proceso_incomplete_data.csv',
+    mime='text/csv',
+)
+
 # Verificar que la columna 'Recinto' no existe antes del quinto mapeo
 #if 'Recinto' in data0_incomplete.columns:
     #data0_incomplete.drop(columns=['Recinto'], inplace=True)
