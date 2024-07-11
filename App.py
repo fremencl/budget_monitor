@@ -196,8 +196,8 @@ else:
 data0_incomplete = data0[(data0['Proceso'].isna()) & (data0['Recinto'].isna())].copy()  # Crear una copia explícita
 
 # Verificar que la columna 'Proceso' no existe antes del cuarto mapeo
-if 'Proceso' in data0_incomplete.columns:
-    data0_incomplete.drop(columns=['Proceso'], inplace=True)
+#if 'Proceso' in data0_incomplete.columns:
+    #data0_incomplete.drop(columns=['Proceso'], inplace=True)
 
 # Verificar si data0 es un DataFrame
 if not isinstance(data0, pd.DataFrame):
@@ -213,8 +213,8 @@ else:
     st.error("No se encontraron las columnas necesarias para el cuarto mapeo")
 
 # Verificar que la columna 'Recinto' no existe antes del quinto mapeo
-if 'Recinto' in data0_incomplete.columns:
-    data0_incomplete.drop(columns=['Recinto'], inplace=True)
+#if 'Recinto' in data0_incomplete.columns:
+    #data0_incomplete.drop(columns=['Recinto'], inplace=True)
 
 # Asignar Recinto utilizando Base_Ceco_2.csv
 if 'Centro de coste' in data0_incomplete.columns:
