@@ -209,14 +209,14 @@ base_ceco_data['Proceso'] = base_ceco_data['Proceso'].astype(str)
 if not isinstance(data0_incomplete, pd.DataFrame):
     st.error("data0_incomplete no es un DataFrame después del mapeo ceco")
 
-# Tercer mapeo: Asignar Proceso utilizando Base_Ceco_2.csv
+# Mapeo de Proceso utilizando Base_Ceco_2.csv
 if 'Centro de coste' in data0_incomplete.columns:
     data0_incomplete = data0_incomplete.merge(base_ceco_data[['Ceco', 'Proceso']], how='left', left_on='Centro de coste', right_on='Ceco')
-    if 'Proceso_y' in data0_incomplete.columns:  # Verificar si 'Proceso_y' existe después del merge
+    if 'Proceso_y' in data0_incomplete.columns:
         data0_incomplete['Proceso'] = data0_incomplete['Proceso_y']
-        data0_incomplete.drop(columns=['Proceso_y', 'Ceco'], inplace=True)
+        data0_incomplete.drop(columns=['Proceso_y', 'Proceso_x', 'Ceco'], inplace=True)
 else:
-    st.error("No se encontraron las columnas necesarias para el cuarto mapeo")
+    st.error("No se encontraron las columnas necesarias para el mapeo de Proceso")
 
 # Convertir todos los valores en la columna 'Proceso' a cadenas para evitar el error de ordenación
 #data0['Proceso'] = data0['Proceso'].astype(str)
@@ -226,14 +226,14 @@ else:
 #if 'Recinto' in data0_incomplete.columns:
     #data0_incomplete.drop(columns=['Recinto'], inplace=True)
 
-# Asignar Recinto utilizando Base_Ceco_2.csv
+# Mapeo de Recinto utilizando Base_Ceco_2.csv
 if 'Centro de coste' in data0_incomplete.columns:
     data0_incomplete = data0_incomplete.merge(base_ceco_data[['Ceco', 'Recinto']], how='left', left_on='Centro de coste', right_on='Ceco')
-    if 'Recinto_y' in data0_incomplete.columns:  # Verificar si 'Recinto_y' existe después del merge
+    if 'Recinto_y' in data0_incomplete.columns:
         data0_incomplete['Recinto'] = data0_incomplete['Recinto_y']
-        data0_incomplete.drop(columns=['Recinto_y', 'Ceco'], inplace=True)
+        data0_incomplete.drop(columns=['Recinto_y', 'Recinto_x', 'Ceco'], inplace=True)
 else:
-    st.error("No se encontraron las columnas necesarias para el quinto mapeo")
+    st.error("No se encontraron las columnas necesarias para el mapeo de Recinto")
 
 # Unir los datos completos e incompletos
 data0.update(data0_incomplete)
