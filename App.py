@@ -235,19 +235,19 @@ if 'Centro de coste' in data0_incomplete.columns:
 else:
     st.error("No se encontraron las columnas necesarias para el quinto mapeo")
 
+# Unir los datos completos e incompletos
+data0.update(data0_incomplete)
+
 # Generar el enlace de descarga para las filas eliminadas
-csv_proceso_incomplete_data = convertir_a_csv(data0_incomplete)
+csv_proceso_incomplete_data = convertir_a_csv(data0)
 
 # Agregar un botón de descarga en la aplicación
 st.download_button(
-    label="Descargar csv_proceso_incomplete_data",
-    data=csv_proceso_incomplete_data,
-    file_name='filas_proceso_incomplete_data.csv',
+    label="Descargar_post_merge_data",
+    data=csv_post_merge_data,
+    file_name='filas_post_merge_data.csv',
     mime='text/csv',
 )
-
-# Unir los datos completos e incompletos
-data0.update(data0_incomplete)
 
 # Convertir todos los valores en la columna 'Proceso' a cadenas para evitar el error de ordenación
 data0['Proceso'] = data0['Proceso'].astype(str)
