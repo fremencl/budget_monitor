@@ -239,7 +239,7 @@ else:
 data0.update(data0_incomplete)
 
 # Generar el enlace de descarga para las filas eliminadas
-csv_proceso_incomplete_data = convertir_a_csv(data0)
+csv_post_merge_data = convertir_a_csv(data0)
 
 # Agregar un botón de descarga en la aplicación
 st.download_button(
