@@ -123,8 +123,8 @@ data0['Período'] = pd.to_numeric(data0['Período'], errors='coerce')
 data0['Valor/mon.inf.'] = pd.to_numeric(data0['Valor/mon.inf.'], errors='coerce')
 
 # Eliminar filas con NaN en 'Período' y 'Valor/mon.inf.'si es necesario
-data0 = data0.dropna(subset=['Período'])
-data0 = data0.dropna(subset=['Valor/mon.inf.'])
+#data0 = data0.dropna(subset=['Período'])
+#data0 = data0.dropna(subset=['Valor/mon.inf.'])
 
 # Primer mapeo: Asignar Utec utilizando ORDERS_URL
 if 'Orden partner' in data0.columns and 'Orden' in orders_data.columns:
