@@ -195,6 +195,12 @@ else:
 # Filtrar filas sin Proceso y Recinto completos
 data0_incomplete = data0[(data0['Proceso'].isna()) & (data0['Recinto'].isna())].copy()  # Crear una copia explícita
 
+# Convertir columnas a string
+data0_incomplete['Centro de coste'] = data0_incomplete['Centro de coste'].astype(str)
+base_ceco_data['Ceco'] = base_ceco_data['Ceco'].astype(str)
+base_ceco_data['Recinto'] = base_ceco_data['Recinto'].astype(str)
+base_ceco_data['Proceso'] = base_ceco_data['Proceso'].astype(str)
+
 # Verificar que la columna 'Proceso' no existe antes del cuarto mapeo
 #if 'Proceso' in data0_incomplete.columns:
     #data0_incomplete.drop(columns=['Proceso'], inplace=True)
