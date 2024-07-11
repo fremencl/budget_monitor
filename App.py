@@ -237,7 +237,7 @@ csv_con_mapeo_ceco_data = convertir_a_csv(data0)
 
 # Agregar un botón de descarga en la aplicación
 st.download_button(
-    label="Descargar Filas Filtradas Data",
+    label="Descargar Filas con_mapeo_ceco_data",
     data=csv_con_mapeo_ceco_data,
     file_name='filas_con_mapeo_ceco_data.csv',
     mime='text/csv',
