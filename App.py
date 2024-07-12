@@ -235,6 +235,17 @@ if 'Centro de coste' in data0_incomplete.columns:
 else:
     st.error("No se encontraron las columnas necesarias para el mapeo de Recinto")
 
+# Generar el enlace de descarga para las filas eliminadas
+csv_pre_merge_data = convertir_a_csv(data0_incomplete)
+
+# Agregar un botón de descarga en la aplicación
+st.download_button(
+    label="Descargar_pre_merge_data",
+    data=csv_pre_merge_data,
+    file_name='filas_post_merge_data.csv',
+    mime='text/csv',
+)
+
 # Unir los datos completos e incompletos
 data0.update(data0_incomplete)
 
