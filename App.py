@@ -195,6 +195,17 @@ else:
 # Filtrar filas sin Proceso y Recinto completos
 data0_incomplete = data0[(data0['Proceso'].isna()) & (data0['Recinto'].isna())].copy()  # Crear una copia explícita
 
+# Generar el enlace de descarga para las filas eliminadas
+csv_pre_merge_data = convertir_a_csv(data0_incomplete)
+
+# Agregar un botón de descarga en la aplicación
+st.download_button(
+    label="Descargar_filtered_data",
+    data=csv_filtered_data,
+    file_name='filas_filtered_data.csv',
+    mime='text/csv',
+)
+
 # Convertir columnas a string
 data0_incomplete['Centro de coste'] = data0_incomplete['Centro de coste'].astype(str)
 base_ceco_data['Ceco'] = base_ceco_data['Ceco'].astype(str)
@@ -234,17 +245,6 @@ if 'Centro de coste' in data0_incomplete.columns:
         data0_incomplete.drop(columns=['Recinto_y', 'Recinto_x', 'Ceco'], inplace=True)
 else:
     st.error("No se encontraron las columnas necesarias para el mapeo de Recinto")
-
-# Generar el enlace de descarga para las filas eliminadas
-csv_pre_merge_data = convertir_a_csv(data0_incomplete)
-
-# Agregar un botón de descarga en la aplicación
-st.download_button(
-    label="Descargar_pre_merge_data",
-    data=csv_pre_merge_data,
-    file_name='filas_post_merge_data.csv',
-    mime='text/csv',
-)
 
 # Unir los datos completos e incompletos
 data0.update(data0_incomplete)
