@@ -220,7 +220,11 @@ if 'Centro de coste' in data0_incomplete.columns:
 else:
     st.error("No se encontraron las columnas necesarias para el mapeo de Recinto")
 
-# Unir los datos completos e incompletos usando merge y combine_first
+# Limpieza y normalización de los valores antes del merge
+data0['Centro de coste'] = data0['Centro de coste'].str.strip().str.upper()
+data0_incomplete['Centro de coste'] = data0_incomplete['Centro de coste'].str.strip().str.upper()
+
+# Realizar el merge
 combined_data = data0.merge(
     data0_incomplete[['Centro de coste', 'Proceso', 'Recinto']],
     on='Centro de coste',
@@ -234,6 +238,14 @@ combined_data['Recinto'] = combined_data['Recinto'].combine_first(combined_data[
 
 # Eliminar las columnas innecesarias después de la combinación
 combined_data.drop(columns=['Proceso_incomplete', 'Recinto_incomplete'], inplace=True)
+
+# Verificar el resultado después de la combinación
+st.write("DataFrame después de la combinación:")
+st.write(combined_data.head())
+
+# Comprobar la presencia de NaNs
+st.write("Valores NaN en las columnas 'Proceso' y 'Recinto':")
+st.write(combined_data[['Proceso', 'Recinto']].isna().sum())
 
 # Convertir todos los valores en la columna 'Proceso' a cadenas para evitar el error de ordenación
 data0['Proceso'] = data0['Proceso'].astype(str)
