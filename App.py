@@ -182,17 +182,6 @@ else:
 # Filtrar filas sin Proceso y Recinto completos
 data0_incomplete = data0[(data0['Proceso'].isna()) & (data0['Recinto'].isna())].copy()
 
-# Generar el enlace de descarga para las filas eliminadas
-#csv_filtered_data = convertir_a_csv(data0_incomplete)
-
-# Agregar un botón de descarga en la aplicación
-#st.download_button(
-    #label="Descargar_filtered_data",
-    #data=csv_filtered_data,
-    #file_name='filas_filtered_data.csv',
-    #mime='text/csv',
-#)
-
 # Convertir columnas a string
 data0_incomplete['Centro de coste'] = data0_incomplete['Centro de coste'].astype(str)
 base_ceco_data['Ceco'] = base_ceco_data['Ceco'].astype(str)
@@ -241,28 +230,20 @@ combined_data.drop(columns=['Proceso_incomplete', 'Recinto_incomplete'], inplace
 # Asignar el DataFrame resultante a data0
 data0 = combined_data
 
-# Verificar el resultado después de la combinación
-st.write("DataFrame después de la combinación:")
-st.write(combined_data.head())
-
-# Comprobar la presencia de NaNs
-st.write("Valores NaN en las columnas 'Proceso' y 'Recinto':")
-st.write(combined_data[['Proceso', 'Recinto']].isna().sum())
-
 # Convertir todos los valores en la columna 'Proceso' a cadenas para evitar el error de ordenación
 data0['Proceso'] = data0['Proceso'].astype(str)
 data0['Recinto'] = data0['Recinto'].astype(str)
 
-# Generar el enlace de descarga para las filas eliminadas
-csv_procesed_data = convertir_a_csv(combined_data)
+# Generar el enlace de descarga para las filas procesadas
+#csv_procesed_data = convertir_a_csv(combined_data)
 
 # Agregar un botón de descarga en la aplicación
-st.download_button(
-    label="Descargar_procesed_data",
-    data=csv_procesed_data,
-    file_name='filas_procesed_data.csv',
-    mime='text/csv',
-)
+#st.download_button(
+    #label="Descargar_procesed_data",
+    #data=csv_procesed_data,
+    #file_name='filas_procesed_data.csv',
+    #mime='text/csv',
+#)
 
 # Filtros Laterales
 with st.sidebar:
@@ -368,18 +349,18 @@ if gasto_acumulado_presupuestado is not None:
 else:
     col2.markdown(f"<div style='{color_presupuesto} padding: 10px; border-radius: 5px; text-align: center;'>Gasto acumulado presupuestado<br><strong>No disponible</strong></div>", unsafe_allow_html=True)
 
-# Nueva sección: Tabla de los 10 mayores gastos
-st.markdown("#### Top 10 Mayores Gastos")
+# Nueva sección: Tabla de los 5 mayores gastos
+st.markdown("#### Top 5 Mayores Gastos")
 
-# Filtrar y ordenar data0 para obtener los 10 mayores gastos
+# Filtrar y ordenar data0 para obtener los 5 mayores gastos
 data0_sorted = data0.sort_values(by='Valor/mon.inf.', ascending=False)
-top_10_gastos = data0_sorted.head(10)
+top_5_gastos = data0_sorted.head(5)
 
 # Seleccionar columnas específicas para mostrar
-top_10_gastos_display = top_10_gastos[['Centro de coste', 'Denominación del objeto', 'Grupo_Ceco', 'Fe.contabilización', 'Valor/mon.inf.']]
+top_5_gastos_display = top_5_gastos[['Centro de coste', 'Denominación del objeto', 'Grupo_Ceco', 'Fe.contabilización', 'Valor/mon.inf.']]
 
 # Mostrar la tabla en la aplicación Streamlit
-st.dataframe(top_10_gastos_display)
+st.dataframe(top_5_gastos_display)
 
 # Nueva sección: Widgets de Gasto con y sin OT
 st.markdown("#### Gasto con y sin OT")
