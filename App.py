@@ -122,15 +122,15 @@ data0['Recinto'] = None
 st.write("Después de agregar columnas Utec, Proceso y Recinto:")
 st.write(data0.head())
 
-# Convertir la columna 'Período' y 'Valor/mon.inf.'a tipo numérico
+# Convertir la columna 'Período' y 'Valor/mon.inf.' a tipo numérico
 data0['Período'] = pd.to_numeric(data0['Período'], errors='coerce')
 data0['Valor/mon.inf.'] = pd.to_numeric(data0['Valor/mon.inf.'], errors='coerce')
 st.write("Después de convertir 'Período' y 'Valor/mon.inf.' a numérico:")
 st.write(data0.head())
 
-# Eliminar filas con NaN en 'Período' y 'Valor/mon.inf.'si es necesario
-#data0 = data0.dropna(subset=['Período'])
-#data0 = data0.dropna(subset=['Valor/mon.inf.'])
+# Eliminar filas con NaN en 'Período' y 'Valor/mon.inf.' si es necesario
+# data0 = data0.dropna(subset=['Período'])
+# data0 = data0.dropna(subset=['Valor/mon.inf.'])
 
 # Primer mapeo: Asignar Utec utilizando ORDERS_URL
 if 'Orden partner' in data0.columns and 'Orden' in orders_data.columns:
@@ -172,7 +172,7 @@ if 'Utec' in data0.columns:
         st.error("No se encontraron las columnas necesarias para el tercer mapeo")
 else:
     st.error("No se encontraron las columnas necesarias para el tercer mapeo")
-    
+
 # Asegurarse de que data0 es un DataFrame
 if isinstance(data0, pd.DataFrame):
     # Convertir temporalmente 'Período' a tipo numérico para eliminar pares opuestos
@@ -182,7 +182,7 @@ if isinstance(data0, pd.DataFrame):
     data0, removed_data = eliminar_pares_opuestos(data0)  # Capturar ambos DataFrames
     
     # Convertir 'Período' de vuelta a cadena si es necesario
-    #data0['Período'] = data0['Período'].astype(str)
+    # data0['Período'] = data0['Período'].astype(str)
 else:
     st.error("data0 no es un DataFrame")
 
@@ -213,8 +213,8 @@ base_ceco_data['Recinto'] = base_ceco_data['Recinto'].astype(str)
 base_ceco_data['Proceso'] = base_ceco_data['Proceso'].astype(str)
 
 # Verificar que la columna 'Proceso' no existe antes del cuarto mapeo
-#if 'Proceso' in data0_incomplete.columns:
-    #data0_incomplete.drop(columns=['Proceso'], inplace=True)
+# if 'Proceso' in data0_incomplete.columns:
+#     data0_incomplete.drop(columns=['Proceso'], inplace=True)
 
 # Verificar si data0 es un DataFrame
 if not isinstance(data0_incomplete, pd.DataFrame):
@@ -230,12 +230,12 @@ else:
     st.error("No se encontraron las columnas necesarias para el mapeo de Proceso")
 
 # Convertir todos los valores en la columna 'Proceso' a cadenas para evitar el error de ordenación
-#data0['Proceso'] = data0['Proceso'].astype(str)
-#data0['Recinto'] = data0['Recinto'].astype(str)
+# data0['Proceso'] = data0['Proceso'].astype(str)
+# data0['Recinto'] = data0['Recinto'].astype(str)
 
 # Verificar que la columna 'Recinto' no existe antes del quinto mapeo
-#if 'Recinto' in data0_incomplete.columns:
-    #data0_incomplete.drop(columns=['Recinto'], inplace=True)
+# if 'Recinto' in data0_incomplete.columns:
+#     data0_incomplete.drop(columns=['Recinto'], inplace=True)
 
 # Mapeo de Recinto utilizando Base_Ceco_2.csv
 if 'Centro de coste' in data0_incomplete.columns:
@@ -246,8 +246,22 @@ if 'Centro de coste' in data0_incomplete.columns:
 else:
     st.error("No se encontraron las columnas necesarias para el mapeo de Recinto")
 
+# Comprobar tipos de datos antes de actualizar
+st.write("Tipos de datos en data0 antes de actualizar:")
+st.write(data0.dtypes)
+
+st.write("Tipos de datos en data0_incomplete antes de actualizar:")
+st.write(data0_incomplete.dtypes)
+
 # Unir los datos completos e incompletos
 data0.update(data0_incomplete)
+
+# Comprobar resultado después de la actualización
+st.write("DataFrame después de la actualización:")
+st.write(data0.head())
+
+st.write("Tipos de datos en data0 después de actualizar:")
+st.write(data0.dtypes)
 
 # Generar el enlace de descarga para las filas eliminadas
 csv_post_merge_data = convertir_a_csv(data0)
