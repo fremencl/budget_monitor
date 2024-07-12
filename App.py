@@ -240,15 +240,15 @@ data0['Proceso'] = data0['Proceso'].astype(str)
 data0['Recinto'] = data0['Recinto'].astype(str)
 
 # Generar el enlace de descarga para las filas eliminadas
-#csv_procesed_data = convertir_a_csv(data0)
+csv_procesed_data = convertir_a_csv(data0)
 
 # Agregar un botón de descarga en la aplicación
-#st.download_button(
-    #label="Descargar_procesed_data",
-    #data=csv_procesed_data,
-    #file_name='filas_procesed_data.csv',
-    #mime='text/csv',
-#)
+st.download_button(
+    label="Descargar_procesed_data",
+    data=csv_procesed_data,
+    file_name='filas_procesed_data.csv',
+    mime='text/csv',
+)
 
 # Filtros Laterales
 with st.sidebar:
