@@ -252,7 +252,7 @@ data0['Proceso'] = data0['Proceso'].astype(str)
 data0['Recinto'] = data0['Recinto'].astype(str)
 
 # Generar el enlace de descarga para las filas eliminadas
-csv_procesed_data = convertir_a_csv(data0)
+csv_procesed_data = convertir_a_csv(combined_data)
 
 # Agregar un botón de descarga en la aplicación
 st.download_button(
