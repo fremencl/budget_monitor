@@ -253,26 +253,27 @@ st.write(data0.dtypes)
 st.write("Tipos de datos en data0_incomplete antes de actualizar:")
 st.write(data0_incomplete.dtypes)
 
-# Unir los datos completos e incompletos
-data0.update(data0_incomplete)
-
-# Comprobar resultado después de la actualización
-st.write("DataFrame después de la actualización:")
-st.write(data0.head())
-
-st.write("Tipos de datos en data0 después de actualizar:")
-st.write(data0.dtypes)
-
-# Generar el enlace de descarga para las filas eliminadas
-csv_post_merge_data = convertir_a_csv(data0)
-
-# Agregar un botón de descarga en la aplicación
-st.download_button(
-    label="Descargar_post_merge_data",
-    data=csv_post_merge_data,
-    file_name='filas_post_merge_data.csv',
-    mime='text/csv',
+# Unir los datos completos e incompletos usando merge y combine_first
+combined_data = data0.merge(
+    data0_incomplete[['Centro de coste', 'Proceso', 'Recinto']],
+    on='Centro de coste',
+    how='left',
+    suffixes=('', '_incomplete')
 )
+
+# Actualizar los valores de 'Proceso' y 'Recinto' en data0
+combined_data['Proceso'] = combined_data['Proceso'].combine_first(combined_data['Proceso_incomplete'])
+combined_data['Recinto'] = combined_data['Recinto'].combine_first(combined_data['Recinto_incomplete'])
+
+# Eliminar las columnas innecesarias después de la combinación
+combined_data.drop(columns=['Proceso_incomplete', 'Recinto_incomplete'], inplace=True)
+
+# Verificar el resultado después de la combinación
+st.write("DataFrame después de la combinación:")
+st.write(combined_data.head())
+
+st.write("Tipos de datos en combined_data después de la combinación:")
+st.write(combined_data.dtypes)
 
 # Convertir todos los valores en la columna 'Proceso' a cadenas para evitar el error de ordenación
 data0['Proceso'] = data0['Proceso'].astype(str)
