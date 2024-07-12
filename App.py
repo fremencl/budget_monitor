@@ -93,12 +93,6 @@ orders_data = load_data(ORDERS_URL)
 base_utec_data = load_data(BASE_UTEC_URL)
 base_ceco_data = load_data(BASE_CECO_URL)
 
-# Verificar que data0 es un DataFrame justo después de cargarlo
-if not isinstance(data0, pd.DataFrame):
-    st.error("data0 no es un DataFrame después de cargar los datos")
-else:
-    st.write("data0 se cargó correctamente como DataFrame")
-
 # Verificar que las columnas necesarias están presentes en los DataFrames cargados
 assert 'Orden' in orders_data.columns, "La columna 'Orden' no está presente en orders_data"
 assert 'Utec' in orders_data.columns, "La columna 'Utec' no está presente en orders_data"
@@ -119,18 +113,10 @@ budget_data['Mes'] = budget_data['Mes'].astype(str)
 data0['Utec'] = None
 data0['Proceso'] = None
 data0['Recinto'] = None
-st.write("Después de agregar columnas Utec, Proceso y Recinto:")
-st.write(data0.head())
 
 # Convertir la columna 'Período' y 'Valor/mon.inf.' a tipo numérico
 data0['Período'] = pd.to_numeric(data0['Período'], errors='coerce')
 data0['Valor/mon.inf.'] = pd.to_numeric(data0['Valor/mon.inf.'], errors='coerce')
-st.write("Después de convertir 'Período' y 'Valor/mon.inf.' a numérico:")
-st.write(data0.head())
-
-# Eliminar filas con NaN en 'Período' y 'Valor/mon.inf.' si es necesario
-# data0 = data0.dropna(subset=['Período'])
-# data0 = data0.dropna(subset=['Valor/mon.inf.'])
 
 # Primer mapeo: Asignar Utec utilizando ORDERS_URL
 if 'Orden partner' in data0.columns and 'Orden' in orders_data.columns:
@@ -193,28 +179,24 @@ else:
     st.error("data0 no es un DataFrame antes de eliminar filas con valores específicos en 'Grupo_Ceco'")
 
 # Filtrar filas sin Proceso y Recinto completos
-data0_incomplete = data0[(data0['Proceso'].isna()) & (data0['Recinto'].isna())].copy()  # Crear una copia explícita
+data0_incomplete = data0[(data0['Proceso'].isna()) & (data0['Recinto'].isna())].copy()
 
 # Generar el enlace de descarga para las filas eliminadas
-csv_filtered_data = convertir_a_csv(data0_incomplete)
+#csv_filtered_data = convertir_a_csv(data0_incomplete)
 
 # Agregar un botón de descarga en la aplicación
-st.download_button(
-    label="Descargar_filtered_data",
-    data=csv_filtered_data,
-    file_name='filas_filtered_data.csv',
-    mime='text/csv',
-)
+#st.download_button(
+    #label="Descargar_filtered_data",
+    #data=csv_filtered_data,
+    #file_name='filas_filtered_data.csv',
+    #mime='text/csv',
+#)
 
 # Convertir columnas a string
 data0_incomplete['Centro de coste'] = data0_incomplete['Centro de coste'].astype(str)
 base_ceco_data['Ceco'] = base_ceco_data['Ceco'].astype(str)
 base_ceco_data['Recinto'] = base_ceco_data['Recinto'].astype(str)
 base_ceco_data['Proceso'] = base_ceco_data['Proceso'].astype(str)
-
-# Verificar que la columna 'Proceso' no existe antes del cuarto mapeo
-# if 'Proceso' in data0_incomplete.columns:
-#     data0_incomplete.drop(columns=['Proceso'], inplace=True)
 
 # Verificar si data0 es un DataFrame
 if not isinstance(data0_incomplete, pd.DataFrame):
@@ -229,14 +211,6 @@ if 'Centro de coste' in data0_incomplete.columns:
 else:
     st.error("No se encontraron las columnas necesarias para el mapeo de Proceso")
 
-# Convertir todos los valores en la columna 'Proceso' a cadenas para evitar el error de ordenación
-# data0['Proceso'] = data0['Proceso'].astype(str)
-# data0['Recinto'] = data0['Recinto'].astype(str)
-
-# Verificar que la columna 'Recinto' no existe antes del quinto mapeo
-# if 'Recinto' in data0_incomplete.columns:
-#     data0_incomplete.drop(columns=['Recinto'], inplace=True)
-
 # Mapeo de Recinto utilizando Base_Ceco_2.csv
 if 'Centro de coste' in data0_incomplete.columns:
     data0_incomplete = data0_incomplete.merge(base_ceco_data[['Ceco', 'Recinto']], how='left', left_on='Centro de coste', right_on='Ceco')
@@ -245,13 +219,6 @@ if 'Centro de coste' in data0_incomplete.columns:
         data0_incomplete.drop(columns=['Recinto_y', 'Recinto_x', 'Ceco'], inplace=True)
 else:
     st.error("No se encontraron las columnas necesarias para el mapeo de Recinto")
-
-# Comprobar tipos de datos antes de actualizar
-st.write("Tipos de datos en data0 antes de actualizar:")
-st.write(data0.dtypes)
-
-st.write("Tipos de datos en data0_incomplete antes de actualizar:")
-st.write(data0_incomplete.dtypes)
 
 # Unir los datos completos e incompletos usando merge y combine_first
 combined_data = data0.merge(
@@ -268,27 +235,9 @@ combined_data['Recinto'] = combined_data['Recinto'].combine_first(combined_data[
 # Eliminar las columnas innecesarias después de la combinación
 combined_data.drop(columns=['Proceso_incomplete', 'Recinto_incomplete'], inplace=True)
 
-# Verificar el resultado después de la combinación
-st.write("DataFrame después de la combinación:")
-st.write(combined_data.head())
-
-st.write("Tipos de datos en combined_data después de la combinación:")
-st.write(combined_data.dtypes)
-
 # Convertir todos los valores en la columna 'Proceso' a cadenas para evitar el error de ordenación
 data0['Proceso'] = data0['Proceso'].astype(str)
 data0['Recinto'] = data0['Recinto'].astype(str)
-
-# Generar el enlace de descarga para las filas eliminadas
-csv_con_mapeo_ceco_data = convertir_a_csv(data0)
-
-# Agregar un botón de descarga en la aplicación
-st.download_button(
-    label="Descargar Filas con_mapeo_ceco_data",
-    data=csv_con_mapeo_ceco_data,
-    file_name='filas_con_mapeo_ceco_data.csv',
-    mime='text/csv',
-)
 
 # Filtros Laterales
 with st.sidebar:
