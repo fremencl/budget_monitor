@@ -88,6 +88,7 @@ def convertir_a_csv(df):
 
 # Cargar los datos
 data0 = load_data(DATA0_URL)
+data0['id'] = range(1, len(data0) + 1)
 budget_data = load_data(BUDGET_URL)
 orders_data = load_data(ORDERS_URL)
 base_utec_data = load_data(BASE_UTEC_URL)
@@ -224,10 +225,9 @@ else:
 data0['Centro de coste'] = data0['Centro de coste'].str.strip().str.upper()
 data0_incomplete['Centro de coste'] = data0_incomplete['Centro de coste'].str.strip().str.upper()
 
-# Realizar el merge
 combined_data = data0.merge(
-    data0_incomplete[['Centro de coste', 'Proceso', 'Recinto']],
-    on='Centro de coste',
+    data0_incomplete[['Centro de coste', 'Proceso', 'Recinto', 'id']],
+    on=['Centro de coste', 'id'],
     how='left',
     suffixes=('', '_incomplete')
 )
@@ -236,8 +236,10 @@ combined_data = data0.merge(
 combined_data['Proceso'] = combined_data['Proceso'].combine_first(combined_data['Proceso_incomplete'])
 combined_data['Recinto'] = combined_data['Recinto'].combine_first(combined_data['Recinto_incomplete'])
 
-# Eliminar las columnas innecesarias después de la combinación
 combined_data.drop(columns=['Proceso_incomplete', 'Recinto_incomplete'], inplace=True)
+
+# Asignar el DataFrame resultante a data0
+data0 = combined_data
 
 # Verificar el resultado después de la combinación
 st.write("DataFrame después de la combinación:")
