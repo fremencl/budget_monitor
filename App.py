@@ -287,15 +287,28 @@ gasto_real_overhead = gasto_real_overhead.rename(columns={'Valor/mon.inf.': 'Ove
 gasto_real_sin_overhead = data0[data0['Proceso'] != 'Overhead'].groupby(['Ejercicio', 'Período'])['Valor/mon.inf.'].sum().reset_index()
 
 # Paso 3: Calcular las proporciones del gasto sin "Overhead" por año y período
-proporciones = data0[data0['Proceso'] != 'Overhead'].groupby(['Ejercicio', 'Período', 'Proceso'])['Valor/mon.inf.'].sum() / data0[data0['Proceso'] != 'Overhead'].groupby(['Ejercicio', 'Período'])['Valor/mon.inf.'].sum().reset_index(drop=True)
+data_sin_overhead = data0[data0['Proceso'] != 'Overhead'].copy()
+
+# Calcular el gasto total sin "Overhead" por año y período
+total_sin_overhead = data_sin_overhead.groupby(['Ejercicio', 'Período'])['Valor/mon.inf.'].transform('sum')
+
+# Calcular las proporciones por 'Proceso'
+data_sin_overhead['Proporción'] = data_sin_overhead['Valor/mon.inf.'] / total_sin_overhead
 
 # Paso 4: Distribuir el gasto "Overhead" proporcionalmente por año y período
-gasto_real_overhead = gasto_real_overhead.merge(proporciones.reset_index(), on=['Ejercicio', 'Período'], how='left')
-gasto_real_overhead['Distribuido'] = gasto_real_overhead['Overhead'] * gasto_real_overhead['Valor/mon.inf.']
+gasto_real_overhead = data0[data0['Proceso'] == 'Overhead'].groupby(['Ejercicio', 'Período'])['Valor/mon.inf.'].sum().reset_index()
+gasto_real_overhead = gasto_real_overhead.rename(columns={'Valor/mon.inf.': 'Overhead'})
+
+# Merge para obtener las proporciones
+gasto_real_overhead = gasto_real_overhead.merge(data_sin_overhead[['Ejercicio', 'Período', 'Proceso', 'Proporción']], on=['Ejercicio', 'Período'], how='left')
+
+# Distribuir el gasto "Overhead"
+gasto_real_overhead['Distribuido'] = gasto_real_overhead['Overhead'] * gasto_real_overhead['Proporción']
 
 # Paso 5: Sumar la distribución proporcional del gasto "Overhead" al gasto real sin "Overhead"
-gasto_real_ajustado = gasto_real_sin_overhead.merge(gasto_real_overhead[['Ejercicio', 'Período', 'Distribuido']], on=['Ejercicio', 'Período'], how='left')
-gasto_real_ajustado['Valor/mon.inf.'] += gasto_real_ajustado['Distribuido']
+gasto_real_sin_overhead = data_sin_overhead.groupby(['Ejercicio', 'Período', 'Proceso'])['Valor/mon.inf.'].sum().reset_index()
+gasto_real_ajustado = gasto_real_sin_overhead.merge(gasto_real_overhead[['Ejercicio', 'Período', 'Proceso', 'Distribuido']], on=['Ejercicio', 'Período', 'Proceso'], how='left')
+gasto_real_ajustado['Valor/mon.inf.'] += gasto_real_ajustado['Distribuido'].fillna(0)
 
 # Convertir a millones y renombrar columnas
 gasto_real_ajustado['Valor/mon.inf.'] = (gasto_real_ajustado['Valor/mon.inf.'] / 1000000).round(1)
