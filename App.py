@@ -299,6 +299,9 @@ gasto_real_sin_overhead['Valor/mon.inf.'] += total_overhead * (gasto_real_sin_ov
 gasto_real_sin_overhead['Valor/mon.inf.'] = (gasto_real_sin_overhead['Valor/mon.inf.'] / 1000000).round(1)
 gasto_real = gasto_real_sin_overhead.rename(columns={'Ejercicio': 'Año', 'Período': 'Mes'})
 
+# Eliminar filas correspondientes a "Overhead"
+data0 = data0[data0['Proceso'] != 'Overhead']
+
 gasto_presupuestado = budget_data.groupby(['Año', 'Mes'])['Presupuesto'].sum().reset_index()
 gasto_presupuestado['Presupuesto'] = gasto_presupuestado['Presupuesto'].round(1)
 
