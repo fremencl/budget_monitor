@@ -250,7 +250,7 @@ with st.sidebar:
     st.header("Parámetros")
     opcion_año = st.selectbox('Año', ['2024'] + sorted(data0['Ejercicio'].unique()))
     
-    opciones_proceso = ['Todos'] + sorted(data0['Proceso'].unique())
+    opciones_proceso = ['Todos'] + [proceso for proceso in sorted(data0['Proceso'].unique()) if proceso != 'Overhead']
     opcion_proceso = st.selectbox('Proceso', opciones_proceso)
     
     opciones_fam_cuenta = ['Todos'] + sorted(data0['Familia_Cuenta'].unique())
@@ -259,7 +259,7 @@ with st.sidebar:
     opciones_clase_coste = ['Todos'] + sorted(data0['Clase de coste'].unique())
     opcion_clase_coste = st.selectbox('Clase de coste', opciones_clase_coste)
     
-    opciones_recinto = ['Todos'] + sorted(data0['Recinto'].unique())
+    opciones_recinto = ['Todos'] + [recinto for recinto in sorted(data0['Recinto'].unique()) if recinto != 'Overhead']
     opcion_recinto = st.selectbox('Recinto', opciones_recinto)
 
 # Aplicar filtros seleccionados a los DataFrames
