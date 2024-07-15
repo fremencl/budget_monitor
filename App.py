@@ -120,7 +120,7 @@ data0['Período'] = pd.to_numeric(data0['Período'], errors='coerce')
 data0['Valor/mon.inf.'] = pd.to_numeric(data0['Valor/mon.inf.'], errors='coerce')
 
 # Primer mapeo: Asignar Utec utilizando ORDERS_URL
-if 'Orden partner' in data0.columns and 'Orden' in orders_data.columns:
+if 'Orden partner' in data0.columns:
     data0 = data0.merge(orders_data[['Orden', 'Utec']], how='left', left_on='Orden partner', right_on='Orden', suffixes=('_original', '_merged'))
     if 'Utec_merged' in data0.columns:
         data0['Utec'] = data0['Utec_merged']
@@ -233,6 +233,16 @@ data0 = combined_data
 # Convertir todos los valores en la columna 'Proceso' a cadenas para evitar el error de ordenación
 data0['Proceso'] = data0['Proceso'].astype(str)
 data0['Recinto'] = data0['Recinto'].astype(str)
+
+# Calcular el gasto total de "Overhead"
+total_overhead = data0[data0['Proceso'] == 'Overhead']['Valor/mon.inf.'].sum()
+
+# Calcular las proporciones de cada categoría de "Proceso"
+total_gasto_sin_overhead = data0[data0['Proceso'] != 'Overhead']['Valor/mon.inf.'].sum()
+proporciones = data0[data0['Proceso'] != 'Overhead'].groupby('Proceso')['Valor/mon.inf.'].sum() / total_gasto_sin_overhead
+
+# Asignar proporcionalmente el gasto "Overhead" a cada categoría de "Proceso"
+data0['Valor/mon.inf.'] = data0.apply(lambda row: row['Valor/mon.inf.'] + (proporciones[row['Proceso']] * total_overhead) if row['Proceso'] != 'Overhead' else row['Valor/mon.inf.'], axis=1)
 
 # Generar el enlace de descarga para las filas procesadas
 #csv_procesed_data = convertir_a_csv(combined_data)
