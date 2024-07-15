@@ -296,11 +296,27 @@ proporciones = data_sin_overhead.groupby('Proceso')['Valor/mon.inf.'].sum() / to
 st.write("Proporciones Calculadas por Proceso:")
 st.write(proporciones)
 
-# Calcular el gasto real sumando proporcionalmente el gasto "Overhead"
+# Paso 1: Calcular el gasto real sin "Overhead" por año y período
 gasto_real_sin_overhead = data_sin_overhead.groupby(['Ejercicio', 'Período'])['Valor/mon.inf.'].sum().reset_index()
 
-# Agregar el valor proporcional de "Overhead" a cada período
-gasto_real_sin_overhead['Valor/mon.inf.'] += total_overhead * (gasto_real_sin_overhead.groupby('Ejercicio')['Valor/mon.inf.'].transform(lambda x: x / x.sum()))
+# Verificación intermedia: imprimir el gasto real sin "Overhead"
+st.write("Gasto Real sin Overhead por Año y Período:")
+st.write(gasto_real_sin_overhead)
+
+# Paso 2: Calcular la distribución proporcional del "Overhead" por año
+overhead_distribution = total_overhead * (gasto_real_sin_overhead.groupby('Ejercicio')['Valor/mon.inf.'].transform(lambda x: x / x.sum()))
+
+# Verificación intermedia: imprimir la distribución proporcional del "Overhead"
+st.write("Distribución Proporcional del Overhead por Año y Período:")
+st.write(overhead_distribution)
+
+# Paso 3: Sumar el gasto real y el gasto "Overhead" distribuido
+gasto_real_sin_overhead['Valor/mon.inf.'] += overhead_distribution
+
+# Verificación final: imprimir el gasto real ajustado con "Overhead" distribuido
+st.write("Gasto Real Ajustado con Overhead por Año y Período:")
+st.write(gasto_real_sin_overhead)
+
 
 # Convertir a millones y renombrar columnas
 gasto_real_sin_overhead['Valor/mon.inf.'] = (gasto_real_sin_overhead['Valor/mon.inf.'] / 1000000).round(1)
