@@ -147,7 +147,7 @@ else:
 
 # Verificar si data0 es un DataFrame
 if not isinstance(data0, pd.DataFrame):
-    st.error("data0 no es un DataFrame después del primer mapeo")
+    st.error("data0 no es un DataFrame después del segundo mapeo")
 
 # Asignar Recinto utilizando Base_UTEC_BudgetVersion.csv
 if 'Utec' in data0.columns:
@@ -341,8 +341,9 @@ combined_data = combined_data.sort_values(by=['Año', 'Mes'])
 # Tabla combinada
 st.markdown("#### Tabla de Gasto Real vs Presupuestado")
 
-# Ocultar la primera fila de año y ordenar las columnas
-combined_data_display = combined_data.drop(columns=['Año']).set_index(['Mes'])
+# Eliminar cualquier columna duplicada en 'combined_data' antes de transponer
+combined_data_display = combined_data.loc[:, ~combined_data.columns.duplicated()]
+combined_data_display = combined_data_display.drop(columns=['Año']).set_index(['Mes'])
 combined_data_display.columns.name = None  # Eliminar el nombre de las columnas
 combined_data_display.index = combined_data_display.index.map(str)  # Convertir índice a string para visualización
 st.dataframe(combined_data_display.T)
