@@ -279,10 +279,25 @@ def aplicar_filtros(data, opcion_año, opcion_proceso, opcion_fam_cuenta, opcion
 data0 = aplicar_filtros(data0, opcion_año, opcion_proceso, opcion_fam_cuenta, opcion_clase_coste, opcion_recinto, 'Ejercicio')
 budget_data = aplicar_filtros(budget_data, opcion_año, opcion_proceso, opcion_fam_cuenta, opcion_clase_coste, opcion_recinto, 'Año')
 
-# Calcular las sumas por año y mes para Gasto Real y Gasto Presupuestado
-gasto_real = data0.groupby(['Ejercicio', 'Período'])['Valor/mon.inf.'].sum().reset_index()
-gasto_real['Valor/mon.inf.'] = (gasto_real['Valor/mon.inf.'] / 1000000).round(1)  # Convertir a millones con un decimal
-gasto_real = gasto_real.rename(columns={'Ejercicio': 'Año', 'Período': 'Mes'})
+# Calcular el gasto total de "Overhead"
+total_overhead = data0[data0['Proceso'] == 'Overhead']['Valor/mon.inf.'].sum()
+
+# Calcular las proporciones de cada categoría de "Proceso"
+total_gasto_sin_overhead = data0[data0['Proceso'] != 'Overhead']['Valor/mon.inf.'].sum()
+proporciones = data0[data0['Proceso'] != 'Overhead'].groupby('Proceso')['Valor/mon.inf.'].sum() / total_gasto_sin_overhead
+
+# Crear una copia del DataFrame original sin "Overhead" para los cálculos agregados
+data_sin_overhead = data0[data0['Proceso'] != 'Overhead']
+
+# Calcular el gasto real sumando proporcionalmente el gasto "Overhead"
+gasto_real_sin_overhead = data_sin_overhead.groupby(['Ejercicio', 'Período'])['Valor/mon.inf.'].sum().reset_index()
+
+# Agregar el valor proporcional de "Overhead" a cada período
+gasto_real_sin_overhead['Valor/mon.inf.'] += total_overhead * (gasto_real_sin_overhead.groupby('Ejercicio')['Valor/mon.inf.'].transform(lambda x: x / x.sum()))
+
+# Convertir a millones y renombrar columnas
+gasto_real_sin_overhead['Valor/mon.inf.'] = (gasto_real_sin_overhead['Valor/mon.inf.'] / 1000000).round(1)
+gasto_real = gasto_real_sin_overhead.rename(columns={'Ejercicio': 'Año', 'Período': 'Mes'})
 
 gasto_presupuestado = budget_data.groupby(['Año', 'Mes'])['Presupuesto'].sum().reset_index()
 gasto_presupuestado['Presupuesto'] = gasto_presupuestado['Presupuesto'].round(1)
