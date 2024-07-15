@@ -302,7 +302,7 @@ gasto_real_overhead = gasto_real_overhead.merge(proporciones[['Ejercicio', 'Per�
 gasto_real_overhead['Distribuido'] = gasto_real_overhead['Overhead'] * gasto_real_overhead['Proporción']
 
 # Paso 5: Sumar la distribución proporcional del gasto "Overhead" al gasto real sin "Overhead"
-gasto_real_ajustado = gasto_real_sin_overhead.merge(gasto_real_overhead[['Ejercicio', 'Período', 'Proceso', 'Distribuido']], on=['Ejercicio', 'Período'], how='left')
+gasto_real_ajustado = gasto_real_sin_overhead.merge(gasto_real_overhead[['Ejercicio', 'Período', 'Distribuido']], on=['Ejercicio', 'Período'], how='left')
 gasto_real_ajustado['Valor/mon.inf.'] += gasto_real_ajustado['Distribuido'].fillna(0)
 
 # Convertir a millones y renombrar columnas
@@ -311,10 +311,6 @@ gasto_real = gasto_real_ajustado.rename(columns={'Ejercicio': 'Año', 'Período'
 
 # Eliminar filas correspondientes a "Overhead"
 data0 = data0[data0['Proceso'] != 'Overhead']
-
-# Verificación final: imprimir el gasto real ajustado con "Overhead" distribuido
-st.write("Gasto Real Ajustado con Overhead por Año y Período:")
-st.write(gasto_real)
 
 gasto_presupuestado = budget_data.groupby(['Año', 'Mes'])['Presupuesto'].sum().reset_index()
 gasto_presupuestado['Presupuesto'] = gasto_presupuestado['Presupuesto'].round(1)
@@ -333,6 +329,16 @@ combined_data['Diferencia'] = combined_data['Valor/mon.inf.'] - combined_data['P
 # Ordenar las columnas de manera ascendente
 combined_data = combined_data.sort_values(by=['Año', 'Mes'])
 
+# Crear la tabla combinada
+combined_data = pd.merge(gasto_real, budget_data.groupby(['Año', 'Mes'])['Presupuesto'].sum().reset_index(), on=['Año', 'Mes'], how='outer').fillna(0)
+combined_data['Diferencia'] = combined_data['Valor/mon.inf.'] - combined_data['Presupuesto']
+
+# Asegurarse de que las columnas son únicas antes de la transposición
+combined_data.columns = pd.io.parsers.ParserBase({'names': combined_data.columns})._maybe_dedup_names(combined_data.columns)
+
+# Ordenar las columnas de manera ascendente
+combined_data = combined_data.sort_values(by=['Año', 'Mes'])
+
 # Tabla combinada
 st.markdown("#### Tabla de Gasto Real vs Presupuestado")
 
@@ -340,6 +346,11 @@ st.markdown("#### Tabla de Gasto Real vs Presupuestado")
 combined_data_display = combined_data.drop(columns=['Año']).set_index(['Mes'])
 combined_data_display.columns.name = None  # Eliminar el nombre de las columnas
 combined_data_display.index = combined_data_display.index.map(str)  # Convertir índice a string para visualización
+
+# Verificación final: imprimir el gasto real ajustado con "Overhead" distribuido
+st.write("Gasto Real Ajustado con Overhead por Año y Período:")
+st.write(gasto_real)
+
 st.dataframe(combined_data_display.T)
 
 # Nueva sección: Widgets de Gasto Acumulado
