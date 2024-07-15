@@ -279,15 +279,22 @@ def aplicar_filtros(data, opcion_año, opcion_proceso, opcion_fam_cuenta, opcion
 data0 = aplicar_filtros(data0, opcion_año, opcion_proceso, opcion_fam_cuenta, opcion_clase_coste, opcion_recinto, 'Ejercicio')
 budget_data = aplicar_filtros(budget_data, opcion_año, opcion_proceso, opcion_fam_cuenta, opcion_clase_coste, opcion_recinto, 'Año')
 
+# Crear una copia del DataFrame original sin "Overhead" para los cálculos agregados
+data_sin_overhead = data0[data0['Proceso'] != 'Overhead']
+
 # Calcular el gasto total de "Overhead"
 total_overhead = data0[data0['Proceso'] == 'Overhead']['Valor/mon.inf.'].sum()
 
-# Calcular las proporciones de cada categoría de "Proceso"
-total_gasto_sin_overhead = data0[data0['Proceso'] != 'Overhead']['Valor/mon.inf.'].sum()
-proporciones = data0[data0['Proceso'] != 'Overhead'].groupby('Proceso')['Valor/mon.inf.'].sum() / total_gasto_sin_overhead
+# Imprimir el total del gasto "Overhead"
+st.write("Total Gasto Overhead:", total_overhead)
 
-# Crear una copia del DataFrame original sin "Overhead" para los cálculos agregados
-data_sin_overhead = data0[data0['Proceso'] != 'Overhead']
+# Calcular las proporciones de cada categoría de "Proceso"
+total_gasto_sin_overhead = data_sin_overhead['Valor/mon.inf.'].sum()
+proporciones = data_sin_overhead.groupby('Proceso')['Valor/mon.inf.'].sum() / total_gasto_sin_overhead
+
+# Imprimir las proporciones calculadas para cada categoría
+st.write("Proporciones Calculadas por Proceso:")
+st.write(proporciones)
 
 # Calcular el gasto real sumando proporcionalmente el gasto "Overhead"
 gasto_real_sin_overhead = data_sin_overhead.groupby(['Ejercicio', 'Período'])['Valor/mon.inf.'].sum().reset_index()
