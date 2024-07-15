@@ -341,9 +341,26 @@ combined_data = combined_data.sort_values(by=['Año', 'Mes'])
 # Tabla combinada
 st.markdown("#### Tabla de Gasto Real vs Presupuestado")
 
-# Eliminar cualquier columna duplicada en 'combined_data' antes de transponer
-combined_data_display = combined_data.loc[:, ~combined_data.columns.duplicated()]
-combined_data_display = combined_data_display.drop(columns=['Año']).set_index(['Mes'])
+# Asegurar nombres únicos para las columnas antes de transponer
+def make_unique_columns(columns):
+    seen = set()
+    new_columns = []
+    for col in columns:
+        if col in seen:
+            count = 1
+            new_col = f"{col}_{count}"
+            while new_col in seen:
+                count += 1
+                new_col = f"{col}_{count}"
+            new_columns.append(new_col)
+            seen.add(new_col)
+        else:
+            new_columns.append(col)
+            seen.add(col)
+    return new_columns
+
+combined_data.columns = make_unique_columns(combined_data.columns)
+combined_data_display = combined_data.drop(columns=['Año']).set_index(['Mes'])
 combined_data_display.columns.name = None  # Eliminar el nombre de las columnas
 combined_data_display.index = combined_data_display.index.map(str)  # Convertir índice a string para visualización
 st.dataframe(combined_data_display.T)
