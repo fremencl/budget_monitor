@@ -309,6 +309,12 @@ gasto_real_ajustado['Valor/mon.inf.'] += gasto_real_ajustado['Distribuido'].fill
 gasto_real_ajustado['Valor/mon.inf.'] = (gasto_real_ajustado['Valor/mon.inf.'] / 1000000).round(1)
 gasto_real = gasto_real_ajustado.rename(columns={'Ejercicio': 'Año', 'Período': 'Mes'})
 
+# Convertir la columna 'Mes' en gasto_real a tipo int
+gasto_real['Mes'] = gasto_real['Mes'].astype(int)
+
+# Convertir la columna 'Mes' en budget_data a tipo int
+budget_data['Mes'] = budget_data['Mes'].astype(int)
+
 # Eliminar filas correspondientes a "Overhead"
 data0 = data0[data0['Proceso'] != 'Overhead']
 
