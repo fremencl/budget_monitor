@@ -86,6 +86,16 @@ def convertir_a_csv(df):
     buffer.seek(0)
     return buffer.getvalue()
 
+def make_unique_columns(columns):
+    seen = {}
+    for i, col in enumerate(columns):
+        if col in seen:
+            seen[col] += 1
+            columns[i] = f"{col}_{seen[col]}"
+        else:
+            seen[col] = 0
+    return columns
+
 # Cargar los datos
 data0 = load_data(DATA0_URL)
 data0['id'] = range(1, len(data0) + 1)
@@ -328,19 +338,11 @@ gasto_presupuestado['Año'] = gasto_presupuestado['Año'].astype(str)
 gasto_presupuestado['Mes'] = gasto_presupuestado['Mes'].astype(int)  # Convertir a entero para orden correcto
 
 # Crear la tabla combinada
-combined_data = pd.merge(gasto_real, gasto_presupuestado, on=['Año', 'Mes'], how='outer').fillna(0)
-
-combined_data['Diferencia'] = combined_data['Valor/mon.inf.'] - combined_data['Presupuesto']
-
-# Ordenar las columnas de manera ascendente
-combined_data = combined_data.sort_values(by=['Año', 'Mes'])
-
-# Crear la tabla combinada
 combined_data = pd.merge(gasto_real, budget_data.groupby(['Año', 'Mes'])['Presupuesto'].sum().reset_index(), on=['Año', 'Mes'], how='outer').fillna(0)
 combined_data['Diferencia'] = combined_data['Valor/mon.inf.'] - combined_data['Presupuesto']
 
 # Asegurarse de que las columnas son únicas antes de la transposición
-combined_data.columns = pd.io.parsers.ParserBase({'names': combined_data.columns})._maybe_dedup_names(combined_data.columns)
+combined_data.columns = make_unique_columns(list(combined_data.columns))
 
 # Ordenar las columnas de manera ascendente
 combined_data = combined_data.sort_values(by=['Año', 'Mes'])
