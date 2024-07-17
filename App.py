@@ -400,8 +400,11 @@ else:
 # Nueva sección: Tabla de los 5 mayores gastos
 st.markdown("#### Top 5 Mayores Gastos")
 
+# Filtrar filas con 'Centro de coste' no vacío
+data0_filtered = data0[data0['Centro de coste'].notna() & (data0['Centro de coste'] != '')]
+
 # Filtrar y ordenar data0 para obtener los 5 mayores gastos
-data0_sorted = data0.sort_values(by='Valor/mon.inf.', ascending=False)
+data0_sorted = data0_filtered.sort_values(by='Valor/mon.inf.', ascending=False)
 top_5_gastos = data0_sorted.head(5)
 
 # Seleccionar columnas específicas para mostrar
