@@ -301,8 +301,8 @@ with st.sidebar:
     opciones_proceso = ['Todos'] + [proceso for proceso in sorted(data0['Proceso'].unique()) if proceso != 'Overhead']
     opcion_proceso = st.selectbox('Proceso', opciones_proceso)
 
-    # Eliminar NaN y convertir a string para 'Familia_Cuenta'
-    opciones_fam_cuenta = ['Todos'] + sorted([fc for fc in data0['Familia_Cuenta'].unique() if pd.notna(fc)])
+    # Lista fija de opciones para 'Familia_Cuenta'
+    opciones_fam_cuenta = ['Todos', 'Servicios', 'Materiales']
     opcion_fam_cuenta = st.selectbox('Familia_Cuenta', opciones_fam_cuenta)
 
     # Eliminar NaN y convertir a string para 'Clase de coste'
