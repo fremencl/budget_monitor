@@ -333,14 +333,6 @@ gasto_presupuestado['Mes'] = gasto_presupuestado['Mes'].astype(int)  # Convertir
 # Crear la tabla combinada
 combined_data = pd.merge(gasto_real, gasto_presupuestado, on=['Año', 'Mes'], how='outer').fillna(0)
 
-combined_data['Diferencia'] = combined_data['Valor/mon.inf.'] - combined_data['Presupuesto']
-
-# Ordenar las columnas de manera ascendente
-combined_data = combined_data.sort_values(by=['Año', 'Mes'])
-
-# Tabla combinada
-st.markdown("#### Tabla de Gasto Real vs Presupuestado")
-
 # Asegurar nombres únicos para las columnas antes de transponer
 def make_unique_columns(columns):
     seen = set()
@@ -359,10 +351,21 @@ def make_unique_columns(columns):
             seen.add(col)
     return new_columns
 
+# Aplicar la función para hacer las columnas únicas
 combined_data.columns = make_unique_columns(combined_data.columns)
+
+# Verificación de columnas duplicadas antes de transponer
+assert combined_data.columns.is_unique, "El DataFrame combinado tiene columnas duplicadas."
+
+# Ordenar las columnas de manera ascendente
+combined_data = combined_data.sort_values(by=['Año', 'Mes'])
+
+# Crear la tabla combinada para visualización
 combined_data_display = combined_data.drop(columns=['Año']).set_index(['Mes'])
 combined_data_display.columns.name = None  # Eliminar el nombre de las columnas
 combined_data_display.index = combined_data_display.index.map(str)  # Convertir índice a string para visualización
+
+# Mostrar en Streamlit
 st.dataframe(combined_data_display.T)
 
 # Nueva sección: Widgets de Gasto Acumulado
