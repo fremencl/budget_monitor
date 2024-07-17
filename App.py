@@ -279,6 +279,9 @@ def aplicar_filtros(data, opcion_año, opcion_proceso, opcion_fam_cuenta, opcion
 data0 = aplicar_filtros(data0, opcion_año, opcion_proceso, opcion_fam_cuenta, opcion_clase_coste, opcion_recinto, 'Ejercicio')
 budget_data = aplicar_filtros(budget_data, opcion_año, opcion_proceso, opcion_fam_cuenta, opcion_clase_coste, opcion_recinto, 'Año')
 
+import streamlit as st
+import pandas as pd
+
 # Paso 1: Calcular el gasto real de "Overhead" por año y período
 gasto_real_overhead = data0[data0['Proceso'] == 'Overhead'].groupby(['Ejercicio', 'Período'])['Valor/mon.inf.'].sum().reset_index()
 gasto_real_overhead = gasto_real_overhead.rename(columns={'Valor/mon.inf.': 'Overhead'})
@@ -307,12 +310,17 @@ gasto_real_overhead['Distribuido'] = gasto_real_overhead['Overhead'] * gasto_rea
 
 # Paso 5: Sumar la distribución proporcional del gasto "Overhead" al gasto real sin "Overhead"
 gasto_real_sin_overhead = data_sin_overhead.groupby(['Ejercicio', 'Período', 'Proceso'])['Valor/mon.inf.'].sum().reset_index()
-gasto_real_ajustado = gasto_real_sin_overhead.merge(gasto_real_overhead[['Ejercicio', 'Período', 'Proceso', 'Distribuido']], on=['Ejercicio', 'Período', 'Proceso'], how='left')
-gasto_real_ajustado['Valor/mon.inf.'] += gasto_real_ajustado['Distribuido'].fillna(0)
+
+# Renombrar explícitamente para evitar duplicados
+gasto_real_sin_overhead = gasto_real_sin_overhead.rename(columns={'Valor/mon.inf.': 'Valor_sin_overhead'})
+gasto_real_overhead = gasto_real_overhead.rename(columns={'Distribuido': 'Distribuido_overhead'})
+
+gasto_real_ajustado = gasto_real_sin_overhead.merge(gasto_real_overhead[['Ejercicio', 'Período', 'Proceso', 'Distribuido_overhead']], on=['Ejercicio', 'Período', 'Proceso'], how='left')
+gasto_real_ajustado['Valor_sin_overhead'] += gasto_real_ajustado['Distribuido_overhead'].fillna(0)
 
 # Convertir a millones y renombrar columnas
-gasto_real_ajustado['Valor/mon.inf.'] = (gasto_real_ajustado['Valor/mon.inf.'] / 1000000).round(1)
-gasto_real = gasto_real_ajustado.rename(columns={'Ejercicio': 'Año', 'Período': 'Mes'})
+gasto_real_ajustado['Valor_sin_overhead'] = (gasto_real_ajustado['Valor_sin_overhead'] / 1000000).round(1)
+gasto_real = gasto_real_ajustado.rename(columns={'Ejercicio': 'Año', 'Período': 'Mes', 'Valor_sin_overhead': 'Valor/mon.inf.'})
 
 # Eliminar filas correspondientes a "Overhead"
 data0 = data0[data0['Proceso'] != 'Overhead']
