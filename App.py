@@ -289,6 +289,9 @@ data0 = pd.concat([data0, filas_nuevas_df], ignore_index=True)
 # Paso 7: Eliminar las filas correspondientes a "Overhead"
 data0 = data0[data0['Proceso'] != 'Overhead']
 
+# Convertir la columna 'Familia_Cuenta' a tipo string
+data0['Familia_Cuenta'] = data0['Familia_Cuenta'].astype(str)
+
 # Filtros Laterales
 with st.sidebar:
     st.header("Parámetros")
