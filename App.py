@@ -301,13 +301,13 @@ with st.sidebar:
     opciones_proceso = ['Todos'] + [proceso for proceso in sorted(data0['Proceso'].unique()) if proceso != 'Overhead']
     opcion_proceso = st.selectbox('Proceso', opciones_proceso)
     
-    opciones_fam_cuenta = ['Todos'] + sorted(data0['Familia_Cuenta'].unique())
+    opciones_fam_cuenta = ['Todos'] + sorted([fc for fc in data0['Familia_Cuenta'].unique() if pd.notna(fc)])
     opcion_fam_cuenta = st.selectbox('Familia_Cuenta', opciones_fam_cuenta)
     
-    opciones_clase_coste = ['Todos'] + sorted(data0['Clase de coste'].unique())
+    opciones_clase_coste = ['Todos'] + sorted([cc for cc in data0['Clase de coste'].unique() if pd.notna(cc)])
     opcion_clase_coste = st.selectbox('Clase de coste', opciones_clase_coste)
     
-    opciones_recinto = ['Todos'] + [recinto for recinto in sorted(data0['Recinto'].unique()) if recinto != 'Overhead']
+    opciones_recinto = ['Todos'] + sorted([recinto for recinto in data0['Recinto'].unique() if pd.notna(recinto) and recinto != 'Overhead'])
     opcion_recinto = st.selectbox('Recinto', opciones_recinto)
 
 # Aplicar filtros seleccionados a los DataFrames
