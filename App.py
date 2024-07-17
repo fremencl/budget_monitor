@@ -297,17 +297,20 @@ data0['Recinto'] = data0['Recinto'].astype(str)
 with st.sidebar:
     st.header("Parámetros")
     opcion_año = st.selectbox('Año', ['2024'] + sorted(data0['Ejercicio'].unique()))
-    
+
     opciones_proceso = ['Todos'] + [proceso for proceso in sorted(data0['Proceso'].unique()) if proceso != 'Overhead']
     opcion_proceso = st.selectbox('Proceso', opciones_proceso)
     
-    opciones_fam_cuenta = ['Todos'] + sorted([fc for fc in data0['Familia_Cuenta'].unique() if pd.notna(fc)])
+    # Eliminar NaN de las opciones de 'Familia_Cuenta'
+    opciones_fam_cuenta = ['Todos'] + sorted(data0['Familia_Cuenta'].dropna().unique())
     opcion_fam_cuenta = st.selectbox('Familia_Cuenta', opciones_fam_cuenta)
     
-    opciones_clase_coste = ['Todos'] + sorted([cc for cc in data0['Clase de coste'].unique() if pd.notna(cc)])
+    # Eliminar NaN de las opciones de 'Clase de coste'
+    opciones_clase_coste = ['Todos'] + sorted(data0['Clase de coste'].dropna().unique())
     opcion_clase_coste = st.selectbox('Clase de coste', opciones_clase_coste)
     
-    opciones_recinto = ['Todos'] + sorted([recinto for recinto in data0['Recinto'].unique() if pd.notna(recinto) and recinto != 'Overhead'])
+    # Eliminar NaN y 'Overhead' de las opciones de 'Recinto'
+    opciones_recinto = ['Todos'] + sorted(data0['Recinto'].dropna().unique())
     opcion_recinto = st.selectbox('Recinto', opciones_recinto)
 
 # Aplicar filtros seleccionados a los DataFrames
