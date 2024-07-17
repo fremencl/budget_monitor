@@ -245,6 +245,50 @@ data0['Recinto'] = data0['Recinto'].astype(str)
     #mime='text/csv',
 #)
 
+# Paso 1: Calcular el gasto total mensual por proceso, excluyendo "Overhead"
+gasto_mensual_proceso = data0[data0['Proceso'] != 'Overhead'].groupby(['Ejercicio', 'Período', 'Proceso'])['Valor/mon.inf.'].sum().reset_index()
+
+# Paso 2: Calcular el gasto total mensual excluyendo "Overhead"
+gasto_mensual_total_sin_overhead = gasto_mensual_proceso.groupby(['Ejercicio', 'Período'])['Valor/mon.inf.'].sum().reset_index()
+gasto_mensual_total_sin_overhead = gasto_mensual_total_sin_overhead.rename(columns={'Valor/mon.inf.': 'Total_sin_overhead'})
+
+# Paso 3: Calcular las proporciones de cada proceso con respecto al gasto total mensual excluyendo "Overhead"
+gasto_mensual_proceso = gasto_mensual_proceso.merge(gasto_mensual_total_sin_overhead, on=['Ejercicio', 'Período'])
+gasto_mensual_proceso['Proporción'] = gasto_mensual_proceso['Valor/mon.inf.'] / gasto_mensual_proceso['Total_sin_overhead']
+
+# Paso 4: Filtrar solo los datos de "Overhead"
+gasto_overhead = data0[data0['Proceso'] == 'Overhead'].groupby(['Ejercicio', 'Período'])['Valor/mon.inf.'].sum().reset_index()
+
+# Paso 5: Crear nuevas filas para cada proceso con el monto redistribuido de "Overhead"
+filas_nuevas = []
+
+for _, overhead_row in gasto_overhead.iterrows():
+    ejercicio = overhead_row['Ejercicio']
+    periodo = overhead_row['Período']
+    overhead_valor = overhead_row['Valor/mon.inf.']
+    
+    # Obtener las proporciones de los otros procesos en el mismo período
+    proporciones_procesos = gasto_mensual_proceso[(gasto_mensual_proceso['Ejercicio'] == ejercicio) & 
+                                                  (gasto_mensual_proceso['Período'] == periodo)]
+    
+    for _, proc_row in proporciones_procesos.iterrows():
+        nueva_fila = {
+            'Ejercicio': ejercicio,
+            'Período': periodo,
+            'Proceso': proc_row['Proceso'],
+            'Valor/mon.inf.': overhead_valor * proc_row['Proporción']
+        }
+        filas_nuevas.append(nueva_fila)
+
+# Convertir la lista de nuevas filas a un DataFrame
+filas_nuevas_df = pd.DataFrame(filas_nuevas)
+
+# Paso 6: Agregar las nuevas filas al DataFrame original
+data0 = pd.concat([data0, filas_nuevas_df], ignore_index=True)
+
+# Paso 7: Eliminar las filas correspondientes a "Overhead"
+data0 = data0[data0['Proceso'] != 'Overhead']
+
 # Filtros Laterales
 with st.sidebar:
     st.header("Parámetros")
