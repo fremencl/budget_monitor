@@ -147,7 +147,7 @@ else:
 
 # Verificar si data0 es un DataFrame
 if not isinstance(data0, pd.DataFrame):
-    st.error("data0 no es un DataFrame después del segundo mapeo")
+    st.error("data0 no es un DataFrame después del primer mapeo")
 
 # Asignar Recinto utilizando Base_UTEC_BudgetVersion.csv
 if 'Utec' in data0.columns:
@@ -279,55 +279,10 @@ def aplicar_filtros(data, opcion_año, opcion_proceso, opcion_fam_cuenta, opcion
 data0 = aplicar_filtros(data0, opcion_año, opcion_proceso, opcion_fam_cuenta, opcion_clase_coste, opcion_recinto, 'Ejercicio')
 budget_data = aplicar_filtros(budget_data, opcion_año, opcion_proceso, opcion_fam_cuenta, opcion_clase_coste, opcion_recinto, 'Año')
 
-import streamlit as st
-import pandas as pd
-
-# Paso 1: Calcular el gasto real de "Overhead" por año y período
-gasto_real_overhead = data0[data0['Proceso'] == 'Overhead'].groupby(['Ejercicio', 'Período'])['Valor/mon.inf.'].sum().reset_index()
-gasto_real_overhead = gasto_real_overhead.rename(columns={'Valor/mon.inf.': 'Overhead'})
-
-# Paso 2: Calcular el gasto real sin "Overhead" por año y período
-gasto_real_sin_overhead = data0[data0['Proceso'] != 'Overhead'].groupby(['Ejercicio', 'Período'])['Valor/mon.inf.'].sum().reset_index()
-
-# Paso 3: Calcular las proporciones del gasto sin "Overhead" por año y período
-data_sin_overhead = data0[data0['Proceso'] != 'Overhead'].copy()
-
-# Calcular el gasto total sin "Overhead" por año y período
-total_sin_overhead = data_sin_overhead.groupby(['Ejercicio', 'Período'])['Valor/mon.inf.'].transform('sum')
-
-# Calcular las proporciones por 'Proceso'
-data_sin_overhead['Proporción'] = data_sin_overhead['Valor/mon.inf.'] / total_sin_overhead
-
-# Paso 4: Distribuir el gasto "Overhead" proporcionalmente por año y período
-gasto_real_overhead = data0[data0['Proceso'] == 'Overhead'].groupby(['Ejercicio', 'Período'])['Valor/mon.inf.'].sum().reset_index()
-gasto_real_overhead = gasto_real_overhead.rename(columns={'Valor/mon.inf.': 'Overhead'})
-
-# Merge para obtener las proporciones
-gasto_real_overhead = gasto_real_overhead.merge(data_sin_overhead[['Ejercicio', 'Período', 'Proceso', 'Proporción']], on=['Ejercicio', 'Período'], how='left')
-
-# Distribuir el gasto "Overhead"
-gasto_real_overhead['Distribuido'] = gasto_real_overhead['Overhead'] * gasto_real_overhead['Proporción']
-
-# Paso 5: Sumar la distribución proporcional del gasto "Overhead" al gasto real sin "Overhead"
-gasto_real_sin_overhead = data_sin_overhead.groupby(['Ejercicio', 'Período', 'Proceso'])['Valor/mon.inf.'].sum().reset_index()
-
-# Renombrar explícitamente para evitar duplicados
-gasto_real_sin_overhead = gasto_real_sin_overhead.rename(columns={'Valor/mon.inf.': 'Valor_sin_overhead'})
-gasto_real_overhead = gasto_real_overhead.rename(columns={'Distribuido': 'Distribuido_overhead'})
-
-gasto_real_ajustado = gasto_real_sin_overhead.merge(gasto_real_overhead[['Ejercicio', 'Período', 'Proceso', 'Distribuido_overhead']], on=['Ejercicio', 'Período', 'Proceso'], how='left')
-gasto_real_ajustado['Valor_sin_overhead'] += gasto_real_ajustado['Distribuido_overhead'].fillna(0)
-
-# Convertir a millones y renombrar columnas
-gasto_real_ajustado['Valor_sin_overhead'] = (gasto_real_ajustado['Valor_sin_overhead'] / 1000000).round(1)
-gasto_real = gasto_real_ajustado.rename(columns={'Ejercicio': 'Año', 'Período': 'Mes', 'Valor_sin_overhead': 'Valor/mon.inf.'})
-
-# Eliminar filas correspondientes a "Overhead"
-data0 = data0[data0['Proceso'] != 'Overhead']
-
-# Verificación final: imprimir el gasto real ajustado con "Overhead" distribuido
-st.write("Gasto Real Ajustado con Overhead por Año y Período:")
-st.write(gasto_real)
+# Calcular las sumas por año y mes para Gasto Real y Gasto Presupuestado
+gasto_real = data0.groupby(['Ejercicio', 'Período'])['Valor/mon.inf.'].sum().reset_index()
+gasto_real['Valor/mon.inf.'] = (gasto_real['Valor/mon.inf.'] / 1000000).round(1)  # Convertir a millones con un decimal
+gasto_real = gasto_real.rename(columns={'Ejercicio': 'Año', 'Período': 'Mes'})
 
 gasto_presupuestado = budget_data.groupby(['Año', 'Mes'])['Presupuesto'].sum().reset_index()
 gasto_presupuestado['Presupuesto'] = gasto_presupuestado['Presupuesto'].round(1)
@@ -341,39 +296,18 @@ gasto_presupuestado['Mes'] = gasto_presupuestado['Mes'].astype(int)  # Convertir
 # Crear la tabla combinada
 combined_data = pd.merge(gasto_real, gasto_presupuestado, on=['Año', 'Mes'], how='outer').fillna(0)
 
-# Asegurar nombres únicos para las columnas antes de transponer
-def make_unique_columns(columns):
-    seen = set()
-    new_columns = []
-    for col in columns:
-        if col in seen:
-            count = 1
-            new_col = f"{col}_{count}"
-            while new_col in seen:
-                count += 1
-                new_col = f"{col}_{count}"
-            new_columns.append(new_col)
-            seen.add(new_col)
-        else:
-            new_columns.append(col)
-            seen.add(col)
-    return new_columns
-
-# Aplicar la función para hacer las columnas únicas
-combined_data.columns = make_unique_columns(combined_data.columns)
-
-# Verificación de columnas duplicadas antes de transponer
-assert combined_data.columns.is_unique, "El DataFrame combinado tiene columnas duplicadas."
+combined_data['Diferencia'] = combined_data['Valor/mon.inf.'] - combined_data['Presupuesto']
 
 # Ordenar las columnas de manera ascendente
 combined_data = combined_data.sort_values(by=['Año', 'Mes'])
 
-# Crear la tabla combinada para visualización
+# Tabla combinada
+st.markdown("#### Tabla de Gasto Real vs Presupuestado")
+
+# Ocultar la primera fila de año y ordenar las columnas
 combined_data_display = combined_data.drop(columns=['Año']).set_index(['Mes'])
 combined_data_display.columns.name = None  # Eliminar el nombre de las columnas
 combined_data_display.index = combined_data_display.index.map(str)  # Convertir índice a string para visualización
-
-# Mostrar en Streamlit
 st.dataframe(combined_data_display.T)
 
 # Nueva sección: Widgets de Gasto Acumulado
